@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import Task from "./components/Task"; // Import Task component
 import Button from "./components/Button";  // Assuming the Button component is in the components folder
 import NavigationBar from "./components/NavigationBar";  // Assuming the NavigationBar component is in the components folder
 
 import { TaskType } from "./types/task.types";  // Import Task type
+import DropdownInput from "./components/Dropdown";
 
 // Update the tasks array to use TaskType
-const tasks: TaskType[] = [
+const initialTasks: TaskType[] = [
   { id: 1, label: "Buy milk", priority: 1, date: "2025-04-18", time: "09:00", done: false },
   { id: 2, label: "Write code", priority: 2, date: "2025-04-18", time: "14:00", done: true },
   { id: 3, label: "Walk the dog", priority: 3, date: "2025-04-19", time: "07:30", done: false },
@@ -35,34 +36,91 @@ const tasks: TaskType[] = [
 ];
 
 
-const activeTasks = tasks.filter(task => !task.done);
-const doneTasks = tasks.filter(task => task.done);
 
-const handleClickTest = () => {
-  alert("Test");
-};
+
 
 const App: React.FC = () => {
-  return (
-    <div>
-      <NavigationBar username={"punpunpunnawat"} />
-      <div>
-        {activeTasks.map((task) => (
-          <Task
-            key={task.id}  // Important to give each item a unique key!
-            {...task}  // Spread the task object to pass as props to Task component
-          />
-        ))}
-      </div>
+  const [tasks, setTasks] = useState<TaskType[]>(initialTasks);
 
-      <div>
-        {doneTasks.map((task) => (
-          <Task
-            key={task.id}  // Important to give each item a unique key!
-            {...task}  // Spread the task object to pass as props to Task component
-          />
-        ))}
+  const activeTasks = tasks.filter(task => !task.done);
+  const doneTasks = tasks.filter(task => task.done);
+
+  const handleClickTest = () => {
+    alert("Test");
+  };
+
+  const handleClickMarkAsDone = (id: number) => {
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id === id ? { ...task, done: !task.done } : task
+      )
+    );
+  };
+
+  const handleClickDelete = (id: number) => {
+    setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
+  };  
+
+  return (
+    <div >
+      <NavigationBar username={"punpunpunnawat"} />
+
+      <div className="flex px-10 py-5 gap-12 flex-col">
+        <div className="flex flex-col items-center p-12 gap-12 bg-light_main light_border">
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-center text-2xl">
+              CURRENT TASK
+            </div>
+            <div className="flex justify-center items-center gap-4">
+              SORT BY
+              <DropdownInput 
+                className="w-60" 
+                label={"TIME LEFT"} 
+                options={["TIME LEFT", "PRIORITY HIGH TO LOW", "PRIORITY LOW TO HIGH"]}
+              />
+            </div>
+          </div>
+          <div className="flex w-full flex-col gap-2">
+            {activeTasks.map((task) => (
+              <Task
+                key={task.id} 
+                {...task} 
+                onClickMarkAsDone={() => handleClickMarkAsDone(task.id)}
+                onClickDelete={() => handleClickDelete(task.id)}
+              />
+            ))}
+          </div>
+        </div>
+        
+        <div className="flex flex-col items-center p-12 gap-12 bg-light_main light_border">
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-center text-2xl">
+              DONE TASK
+            </div>
+            <div className="flex justify-center items-center gap-4">
+              SORT BY
+              <DropdownInput 
+                className="w-60" 
+                label={"TIME LEFT"} 
+                options={["TIME LEFT", "PRIORITY HIGH TO LOW", "PRIORITY LOW TO HIGH"]}
+              />
+            </div>
+          </div>
+          <div className="flex w-full flex-col gap-2">
+            {doneTasks.map((task) => (
+              <Task
+                key={task.id} 
+                {...task} 
+                onClickMarkAsDone={() => handleClickMarkAsDone(task.id)}
+                onClickDelete={() => handleClickDelete(task.id)}
+              />
+            ))}
+          </div>
+        </div>
+        
+      
       </div>
+      
 
       <Button onClick={handleClickTest}>PRIMARY</Button>
     </div>
