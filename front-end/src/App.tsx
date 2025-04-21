@@ -5,7 +5,10 @@ import NavigationBar from "./components/NavigationBar";  // Assuming the Navigat
 
 import { TaskType } from "./types/task.types";  // Import Task type
 import DropdownInput from "./components/Dropdown";
+import { default as DatePicker } from "react-datepicker"; // ✅ Type-safe
 
+
+import "react-datepicker/dist/react-datepicker.css";
 // Update the tasks array to use TaskType
 const initialTasks: TaskType[] = [
   { id: 1, label: "Buy milk", priority: 1, date: "2025-04-18", time: "09:00", done: false },
@@ -35,16 +38,12 @@ const initialTasks: TaskType[] = [
   { id: 25, label: "Finish coding challenge", priority: 3, date: "2025-04-30", time: "20:00", done: false }
 ];
 
-
-
-
-
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<TaskType[]>(initialTasks);
 
   const activeTasks = tasks.filter(task => !task.done);
   const doneTasks = tasks.filter(task => task.done);
-
+  const [startDate, setStartDate] = useState<Date | null>(null);
   const handleClickTest = () => {
     alert("Test");
   };
@@ -65,8 +64,21 @@ const App: React.FC = () => {
     <div>
 
       <NavigationBar username={"punpunpunnawat"} />
-
+      
       <div className="flex flex-col p-6 gap-6 sm:px-12">
+
+        <div className="flex p-12 gap-2 light_border items-center bg-light_main">
+          ADD NEW TASK
+          <DropdownInput label="PRIORITY" options={["High", "Medium", "Low"]}/>
+          <DatePicker
+            selected={startDate}
+            onChange={(date: Date | null) => setStartDate(date)}
+            dateFormat="yyyy-MM-dd"
+            placeholderText="SELECT DUE DATE"
+            className="w-full h-10 px-4 bg-light_main border-light_main focus:outline-border light_border transition-all duration-300"
+            />
+        </div>
+
         <div className="flex flex-col items-center px-4 sm:px-12 py-12 gap-12 bg-light_main light_border">
           <div className="flex flex-col gap-4">
             <div className="flex justify-center text-2xl">
