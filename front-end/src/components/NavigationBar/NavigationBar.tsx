@@ -1,5 +1,6 @@
 import Button from "../Button";
 import Dropdown from "../Dropdown";
+import MenuIcon from '../../assets/icons/menu-burger.svg?react';
 
 interface MyComponentProps {
   username: string;
@@ -8,16 +9,17 @@ interface MyComponentProps {
 const NavigationBar: React.FC<MyComponentProps> = ({ username }) => {
 
   return (
-    <div className="sticky top-0 z-50 flex justify-between h-[80px] w-full items-center px-[60px] py-[20px]  bg-light_main border-b-[1px] border-border">
+    <div className="sticky top-0 z-50 flex justify-between h-[80px] w-full items-center px-8 sm:px-16 bg-light_main border-b-[1px] border-border">
       <div className="text-2xl">TODO</div>
       <div className="flex gap-[40px]">
         <div className="flex gap-[20px]">
           <Button className="hidden lg:block" variant="navigate">CURRENT TASK</Button>
           <Button className="hidden lg:block" variant="navigate">DONE TASK</Button>
-          <Button variant="navigate">DELETED TASK</Button>
+          <Button className="hidden sm:block" variant="navigate">DELETED TASK</Button>
         </div>
-        <Dropdown label={username} options={["1","2","3"]}/>
+        <Dropdown label={username} options={["1","2","3"]} className="hidden sm:block"/>
       </div>
+      <MenuIcon className="sm:hidden"/>
     </div>
   );
 };

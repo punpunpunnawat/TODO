@@ -62,16 +62,17 @@ const App: React.FC = () => {
   };  
 
   return (
-    <div >
+    <div>
+
       <NavigationBar username={"punpunpunnawat"} />
 
-      <div className="flex px-10 py-5 gap-12 flex-col">
-        <div className="flex flex-col items-center p-12 gap-12 bg-light_main light_border">
+      <div className="flex flex-col p-6 gap-6 sm:px-12">
+        <div className="flex flex-col items-center px-4 sm:px-12 py-12 gap-12 bg-light_main light_border">
           <div className="flex flex-col gap-4">
             <div className="flex justify-center text-2xl">
               CURRENT TASK
             </div>
-            <div className="flex justify-center items-center gap-4">
+            <div className="flex flex-col sm:flex-row xl justify-center items-center gap-2 sm:gap-4">
               SORT BY
               <DropdownInput 
                 className="w-60" 
@@ -92,7 +93,7 @@ const App: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex flex-col items-center p-12 gap-12 bg-light_main light_border">
+        <div className="flex flex-col items-center p-12 gap-12 bg-light_main light_border filter brightness-92">
           <div className="flex flex-col gap-4">
             <div className="flex justify-center text-2xl">
               DONE TASK

@@ -3,10 +3,12 @@
   --color-mint-500: oklch(0.72 0.11 178);
 
   --color-border: rgba(0, 0, 0, 0.2);
+  --color-border-disable: rgba(0, 0, 0, 0.1);
+
   --color-light_main: rgb(255, 255, 255);
   --color-light_background: rgb(242, 242, 242);
-  --color-light_text_primary: rgb(60, 60, 60);
-  --color-light_text_secondary: rgba(60, 60, 60, 0.5);
+  --color-light_text-primary: rgb(60, 60, 60);
+  --color-light_text-secondary: rgba(60, 60, 60, 0.5);
   --color-low_priority: rgba(0, 255, 0, 0.2);
   --color-light_disable: rgba(0, 0, 0, 0.1);
 
@@ -27,9 +29,32 @@
   border-radius: 10px;
 }
 
+.light_border_disable {
+  box-shadow: inset 0 0 0 1px var(--color-border-disable);
+  border-radius: 10px;
+}
+
+
 body {
   background-color: var(--color-light_background);
   font-family: "Audrey", sans-serif;
-  color: var(--color-light_text_primary); /* Tailwind's blue-500 */
-
+  color: var(--color-light_text-primary); /* Tailwind's blue-500 */
 }
+
+.desktop {
+  display: flex;
+  flex-direction: column;
+  padding-left: 3rem;
+  padding-right: 3rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  gap: 1rem;
+}
+
+.mobile {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  gap: 1rem;
+}
+
