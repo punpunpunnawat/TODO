@@ -66,18 +66,23 @@ const App: React.FC = () => {
       <NavigationBar username={"punpunpunnawat"} />
       
       <div className="flex flex-col p-6 gap-6 sm:px-12">
-
-        <div className="flex p-12 gap-2 light_border items-center bg-light_main">
+        <div className="flex p-12 gap-4 light_border items-center bg-light_main">
           ADD NEW TASK
-          <DropdownInput label="PRIORITY" options={["High", "Medium", "Low"]}/>
-          <DatePicker
-            selected={startDate}
-            onChange={(date: Date | null) => setStartDate(date)}
-            dateFormat="yyyy-MM-dd"
-            placeholderText="SELECT DUE DATE"
-            className="w-full h-10 px-4 bg-light_main border-light_main focus:outline-border light_border transition-all duration-300"
+          <div className="flex flex-1 gap-2">
+            <DropdownInput label="PRIORITY" options={["High", "Medium", "Low"]}/>
+            <DatePicker
+              selected={startDate}
+              onChange={(date: Date | null) => setStartDate(date)}
+              dateFormat="yyyy-MM-dd"
+              placeholderText="SELECT DUE DATE"
+              className="w-full h-10 px-4 bg-light_main border-light_main focus:outline-border light_border transition-all duration-300"
             />
-        </div>
+            <input placeholder="SELECT DUE TIME" type="time" className="h-10 px-4 light_border"/>
+            <input placeholder="TASK NAME" type="text" className="flex-1 h-10 px-4 light_border"/>
+            <Button>CONFIRM</Button>
+          </div>
+      </div>
+        
 
         <div className="flex flex-col items-center px-4 sm:px-12 py-12 gap-12 bg-light_main light_border">
           <div className="flex flex-col gap-4">
