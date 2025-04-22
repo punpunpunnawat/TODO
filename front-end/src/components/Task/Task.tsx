@@ -1,9 +1,10 @@
 import Button from "../Button";
 import MySvg from '../../assets/icons/check-box-default.svg?react';
+import { Priority } from "../../types/task.types";
 interface TaskProp {
     id: number;
     label: string;
-    priority: number;
+    priority: Priority;
     date: string;
     time: string;
     done: boolean;
@@ -30,7 +31,20 @@ const Task: React.FC<TaskProp> = ({ label, priority, date, time, onClickMarkAsDo
         <div className="flex-grow px-5 truncate overflow-hidden whitespace-nowrap">
           {label}
         </div>
-        <div className="hidden lg:flex w-28 h-10 items-center justify-center light_border_disable">{priority}</div>
+        
+        <div
+          className={`hidden lg:flex w-28 h-10 items-center justify-center light_border_disable
+            ${
+              priority === Priority.HIGH
+                ? "bg-priority_high"
+                : priority === Priority.MEDIUM
+                ? "bg-priority_medium"
+                : "bg-priority_low"
+            }`}
+        >
+          {Priority[priority]}
+        </div>
+
         <div className="hidden xl:flex w-40 h-10 items-center justify-center light_border_disable">{date}</div>
         <div className="hidden xl:flex w-24 h-10 items-center justify-center light_border_disable">{time}</div>
         <Button onClick={handleClickDelete}>DELETE</Button>

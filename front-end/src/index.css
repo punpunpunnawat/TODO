@@ -14,6 +14,10 @@
 
   --color-light_button_hovering: rgb(204, 204, 204);
   --color-light_button_pressing: rgb(255, 255, 255);
+
+  --color-priority_high:rgb(255, 204, 204);
+  --color-priority_medium:rgb(255, 255, 204);
+  --color-priority_low:rgb(204, 255, 204);
 }
 
 @font-face {
