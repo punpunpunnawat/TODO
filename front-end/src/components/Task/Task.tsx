@@ -60,9 +60,6 @@ const Task: React.FC<TaskProp> = ({ label, priority, date, time, onClickMarkAsDo
         <div><Button onClick={handleClickDelete} className="w-full">DELETE</Button></div>
       </div>
     </>
-
-    
-
   );
 };
 
