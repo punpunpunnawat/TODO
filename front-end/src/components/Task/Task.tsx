@@ -1,6 +1,7 @@
 import Button from "../Button";
-import MySvg from '../../assets/icons/check-box-default.svg?react';
+import MaskAsDoneIcon from '../../assets/icons/check-box-default.svg?react';
 import { Priority } from "../../types/task.types";
+import { useEffect, useState } from "react";
 interface TaskProp {
     id: number;
     label: string;
@@ -14,6 +15,37 @@ interface TaskProp {
 
 const Task: React.FC<TaskProp> = ({ label, priority, date, time, onClickMarkAsDone, onClickDelete}) => {
 
+  const [timeLeft, setTimeLeft] = useState<string>("kuy");
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const dueDateTime = new Date(`${date}T${time}`);
+      const diffMs = dueDateTime.getTime() - now.getTime();
+  
+      if (diffMs <= 0) {
+        setTimeLeft("EXPIRED");
+        return;
+      }
+  
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diffMs / (1000 * 60)) % 60);
+  
+      setTimeLeft(`${days}D ${hours}H ${minutes}M Left`);
+    };
+
+    //make it calculate first time render
+    calculateTimeLeft();
+  
+    //calculate every 1min
+    const interval = setInterval(() => {
+      calculateTimeLeft();
+    }, 1000 * 60);
+  
+    return () => clearInterval(interval);
+  }, [date, time]);
+  
   const handleClickMaskAsDone = () => {
     onClickMarkAsDone?.(); 
   };
@@ -26,9 +58,9 @@ const Task: React.FC<TaskProp> = ({ label, priority, date, time, onClickMarkAsDo
     <>
       {/* Desktop layout */}
       <div className="hidden sm:flex gap-2 p-2 bg-light_main light_border items-center ">
-        <MySvg className="w-10 h-10" onClick={handleClickMaskAsDone}/>
-        <div className="hidden md:flex w-50 h-10 items-center justify-center light_border_disable">24DAYS 2HRS Left</div>
-        <div className="flex-grow px-5 truncate overflow-hidden whitespace-nowrap">
+        <MaskAsDoneIcon className="w-10 h-10" onClick={handleClickMaskAsDone}/>
+        <div className="hidden md:flex w-50 h-10 items-center justify-center light_border_disable">{timeLeft}</div>
+        <div className="flex-1 px-5 truncate overflow-hidden whitespace-nowrap">
           {label}
         </div>
         
