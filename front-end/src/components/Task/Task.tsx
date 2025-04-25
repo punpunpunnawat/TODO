@@ -1,75 +1,83 @@
 import Button from "../Button";
 import MaskAsDoneIcon from '../../assets/icons/check-box-default.svg?react';
 import { Priority } from "../../types/task.types";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+
 interface TaskProp {
-    id: number;
-    label: string;
-    priority: Priority;
-    date: string;
-    time: string;
-    done: boolean;
-    onClickMarkAsDone?: () => void;
-    onClickDelete?: () => void;
-  }
+  id: number;
+  label: string;
+  priority: Priority;
+  dueTime: Date;
+  done: boolean;
+  onClickMarkAsDone?: () => void;
+  onClickDelete?: () => void;
+}
 
-const Task: React.FC<TaskProp> = ({ label, priority, date, time, onClickMarkAsDone, onClickDelete}) => {
+const Task = ({ label, priority, dueTime, onClickMarkAsDone, onClickDelete }: TaskProp) => {
+  const [timeLeft, setTimeLeft] = useState<string>("");
 
-  const [timeLeft, setTimeLeft] = useState<string>("kuy");
-
+  // Update the timeLeft every minute
   useEffect(() => {
-    const calculateTimeLeft = () => {
+    // Function to calculate the time left
+    const getTimeLeft = (): string => {
       const now = new Date();
-      const dueDateTime = new Date(`${date}T${time}`);
-      const diffMs = dueDateTime.getTime() - now.getTime();
-  
-      if (diffMs <= 0) {
-        setTimeLeft("EXPIRED");
-        return;
-      }
-  
-      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diffMs / (1000 * 60)) % 60);
-  
-      setTimeLeft(`${days}D ${hours}H ${minutes}M Left`);
+      const diff = dueTime.getTime() - now.getTime();
+
+      if (diff <= 0) return "Due now!";
+
+      const minutes = Math.floor(diff / (1000 * 60)) % 60;
+      const hours = Math.floor(diff / (1000 * 60 * 60)) % 24;
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+      let result = "";
+      if (days > 0) result += `${days}d `;
+      if (hours > 0) result += `${hours}h `;
+      if (minutes > 0) result += `${minutes}m`;
+
+      return result.trim() + " left";
     };
 
-    //make it calculate first time render
-    calculateTimeLeft();
-  
-    //calculate every 1min
-    const interval = setInterval(() => {
-      calculateTimeLeft();
-    }, 1000 * 60);
-  
-    return () => clearInterval(interval);
-  }, [date, time]);
-  
-  const handleClickMaskAsDone = () => {
-    onClickMarkAsDone?.(); 
+    // Update the timeLeft on an interval every minute
+    const intervalId = setInterval(() => {
+      setTimeLeft(getTimeLeft());
+    }, 60000); // 60000 ms = 1 minute
+
+    // Set the initial time left immediately
+    setTimeLeft(getTimeLeft());
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
+  }, [dueTime]); // Re-run the effect when dueTime changes
+
+  const handleClickMarkAsDone = () => {
+    onClickMarkAsDone?.();
   };
 
   const handleClickDelete = () => {
-    onClickDelete?.(); 
+    onClickDelete?.();
   };
+
+  // Split date and time
+  const date = dueTime.toLocaleDateString(); // Format: "4/25/2025"
+  const time = dueTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Format: "12:30 PM"
 
   return (
     <>
       {/* Desktop layout */}
       <div className="hidden sm:flex gap-2 p-2 bg-light_main light_border items-center ">
-        <MaskAsDoneIcon className="w-10 h-10" onClick={handleClickMaskAsDone}/>
-        <div className="hidden md:flex w-50 h-10 items-center justify-center light_border_disable">{timeLeft}</div>
+        <MaskAsDoneIcon className="w-10 h-10" onClick={handleClickMarkAsDone} />
+        <div className="hidden md:flex w-50 h-10 items-center justify-center light_border_disable">
+          {timeLeft}
+        </div>
         <div className="flex-1 px-5 truncate overflow-hidden whitespace-nowrap">
           {label}
         </div>
-        
+
         <div
           className={`hidden lg:flex w-28 h-10 items-center justify-center light_border_disable
-            ${
-              priority === Priority.HIGH
-                ? "bg-priority_high"
-                : priority === Priority.MEDIUM
+            ${priority === Priority.HIGH
+              ? "bg-priority_high"
+              : priority === Priority.MEDIUM
                 ? "bg-priority_medium"
                 : "bg-priority_low"
             }`}

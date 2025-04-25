@@ -8,7 +8,6 @@ export type TaskType = {
   id: number;
   label: string;
   priority: Priority;
-  date: string;
-  time: string;
+  dueTime: Date;
   done: boolean;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Priority, TaskType } from "../../types/task.types";
 import { default as DatePicker } from "react-datepicker";
 import Task from "../../components/Task";
@@ -6,31 +6,64 @@ import Button from "../../components/Button";
 import NavigationBar from "../../components/NavigationBar";
 import DropdownInput from "../../components/Dropdown";
 import "react-datepicker/dist/react-datepicker.css";
+import moment from 'moment-timezone';
 
-const initialTasks: TaskType[] = [
-  { id: 1, label: "Buy milk", priority: Priority.HIGH, date: "2025-04-28", time: "09:00", done: false },
-  { id: 2, label: "Write code", priority: Priority.MEDIUM, date: "2025-04-28", time: "14:00", done: true },
-  { id: 3, label: "Walk the dog", priority: Priority.LOW, date: "2025-04-29", time: "07:30", done: false },
-];
+// Set the global timezone to GMT+0700 (Indochina Time)
+moment.tz.setDefault("Asia/Bangkok");  // Asia/Bangkok is GMT+0700
+
+// Simulate an async fetch from a database
+const fetchTasksFromDatabase = async (): Promise<TaskType[]> => {
+  const mockData = [
+    { id: 1, label: "Buy milk", priority: Priority.HIGH, dueTime: "2025-04-25T03:00:00+07:00", done: false },
+    { id: 2, label: "Write code", priority: Priority.MEDIUM, dueTime: "2025-04-28T14:00:00+07:00", done: true },
+    { id: 3, label: "Walk the dog", priority: Priority.LOW, dueTime: "2025-04-29T07:30:00+07:00", done: false },
+    { id: 4, label: "Attend meeting", priority: Priority.HIGH, dueTime: "2025-04-28T10:30:00+07:00", done: false },
+    { id: 5, label: "Call plumber", priority: Priority.MEDIUM, dueTime: "2025-04-30T16:00:00+07:00", done: false },
+    { id: 6, label: "Read a book", priority: Priority.LOW, dueTime: "2025-05-01T20:00:00+07:00", done: true },
+    { id: 7, label: "Submit report", priority: Priority.HIGH, dueTime: "2025-04-28T12:00:00+07:00", done: true },
+    { id: 8, label: "Grocery shopping", priority: Priority.MEDIUM, dueTime: "2025-05-02T18:00:00+07:00", done: false },
+    { id: 9, label: "Gym workout", priority: Priority.LOW, dueTime: "2025-05-01T06:30:00+07:00", done: true },
+    { id: 10, label: "Prepare dinner", priority: Priority.MEDIUM, dueTime: "2025-04-28T19:00:00+07:00", done: false },
+    { id: 11, label: "Dentist appointment", priority: Priority.HIGH, dueTime: "2025-04-29T11:00:00+07:00", done: false },
+    { id: 12, label: "Email client", priority: Priority.MEDIUM, dueTime: "2025-04-30T09:45:00+07:00", done: true },
+  ];
+
+  // Simulate a delay as if fetching from a database
+  return new Promise(resolve => {
+    setTimeout(() => {
+      // Convert the date strings to Date objects
+      const tasksWithDates = mockData.map(task => ({
+        ...task,
+        dueTime: new Date(task.dueTime), // Convert date string to Date object
+      }));
+      resolve(tasksWithDates);
+    }, 1000); // Simulate a 1-second delay
+  });
+};
 
 const CurrentTask: React.FC = () => {
 
   //State
-  const [tasks, setTasks] = useState<TaskType[]>(initialTasks);
+  const [tasks, setTasks] = useState<TaskType[]>([]);
   const activeTasks = tasks.filter(task => !task.done);
   const doneTasks = tasks.filter(task => task.done);
   const [priorityInput, setPriorityInput] = useState<Priority>(Priority.MEDIUM);
-  const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [dueTimeInput, setDueTimeInput] = useState<Date | null>(null);
   const [taskNameInput, setTaskNameInput] = useState<string>("");
-  const [sortOption, setSortOption] = useState<string>("TIME LEFT");
+  const [activeSortOption, setActiveSortOption] = useState<string>("TIME LEFT");
+  const [doneSortOption, setDoneSortOption] = useState<string>("TIME LEFT");
+  const [loading, setLoading] = useState(true);
 
-  
+  // Fetch tasks from the "database" when the component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      const tasksFromDB = await fetchTasksFromDatabase();
+      setTasks(tasksFromDB);
+      setLoading(false)
+    };
 
-
-  //Handle Function
-  const handleClickTest = () => {
-    alert("Test");
-  };
+    fetchData();
+  }, []);
 
   const handleClickMarkAsDone = (id: number) => {
     setTasks(prevTasks =>
@@ -49,37 +82,52 @@ const CurrentTask: React.FC = () => {
   }
 
   const handleConfirmToAddTask = () => {
-    if (!taskNameInput || !dueDate) {
+    console.log(dueTimeInput);  // Log the original selected due date
+  
+    if (!taskNameInput || !dueTimeInput) {
       alert("Please enter a task name and select a due date/time.");
       return;
     }
   
+    const now = new Date();
+    if (dueTimeInput.getTime() < now.getTime()) {
+      alert("The due date/time cannot be in the past.");
+      return;
+    }
+  
+    // Use moment to first convert the dueDate to UTC and then to the Asia/Bangkok timezone
+    const adjustedDate = moment(dueTimeInput).utc().tz("Asia/Bangkok", true).toDate();
+  
+    // Create the new task with the adjusted time
     const newTask: TaskType = {
       id: tasks.length > 0 ? tasks[tasks.length - 1].id + 1 : 1,
       label: taskNameInput,
       priority: priorityInput,
-      date: dueDate.toISOString().split("T")[0], // "YYYY-MM-DD"
-      time: dueDate.toTimeString().slice(0, 5),  // "HH:MM"
+      dueTime: dueTimeInput, // "YYYY-MM-DD"
       done: false,
     };
   
+    console.log(adjustedDate.toISOString().split("T")[0]);  // Log date
+    console.log(adjustedDate.toTimeString().slice(0, 5));  // Log time
+    
+    // Add the new task
     setTasks(prevTasks => [...prevTasks, newTask]);
   
     // Reset input fields
     setTaskNameInput("");
-    setDueDate(null);
+    setDueTimeInput(null);
     setPriorityInput(Priority.MEDIUM);
   };
 
   const handlePrioritySelectInput = (selectedPriority: string) => {
     switch (selectedPriority) {
-      case "High":
+      case "HIGH":
         setPriorityInput(Priority.HIGH)
         break;
-      case "Medium":
+      case "MEDIUM":
         setPriorityInput(Priority.MEDIUM)
         break;
-      case "Low":
+      case "LOW":
         setPriorityInput(Priority.LOW)
         break;
       default:
@@ -90,8 +138,8 @@ const CurrentTask: React.FC = () => {
   const sortTasks = (tasks: TaskType[], sortBy: string) => {
     return [...tasks].sort((a, b) => {
       if (sortBy === "TIME LEFT") {
-        const aDate = new Date(`${a.date}T${a.time}`);
-        const bDate = new Date(`${b.date}T${b.time}`);
+        const aDate = new Date(`${a.dueTime}`);
+        const bDate = new Date(`${b.dueTime}`);
         return aDate.getTime() - bDate.getTime(); // soonest first
       }
   
@@ -106,123 +154,145 @@ const CurrentTask: React.FC = () => {
       return 0;
     });
   };
-  const sortedActiveTasks = sortTasks(activeTasks, sortOption);
-  const sortedDoneTasks = sortTasks(doneTasks, sortOption);
+  const sortedActiveTasks = sortTasks(activeTasks, activeSortOption);
+  const sortedDoneTasks = sortTasks(doneTasks, doneSortOption);
   
-
-  
-  console.log(taskNameInput);
-  console.log(priorityInput);
-  console.log(dueDate);
-
   return (
     <div>
+    <NavigationBar username="punpunpunnawat" />
 
-      <NavigationBar username={"punpunpunnawat"} />
+    <main className="flex flex-col gap-6 p-6 sm:px-12">
       
+      {/* Add New Task */}
+      <section className="flex flex-col xl:flex-row items-center gap-4 p-12 light_border bg-light_main">
+        <h2 className="text-lg">ADD NEW TASK</h2>
+          <div className="flex flex-1 w-full items-center gap-4">
+            <div className="flex flex-1 flex-col xl:flex-row items-center gap-4 xl:gap-2">
+              <div className="flex w-full items-center gap-2">
+                <DropdownInput
+                label="PRIORITY"
+                options={["HIGH", "MEDIUM", "LOW"]}
+                onSelect={handlePrioritySelectInput}
+                className="w-30"
+              />
+              <div>
+                <DatePicker
+                  selected={dueTimeInput}
+                  onChange={(date: Date | null) => setDueTimeInput(date)}
+                  dateFormat="yyyy-MM-dd HH:mm"
+                  showTimeSelect
+                  timeFormat="HH:mm"
+                  timeIntervals={15}
+                  placeholderText="SELECT DUE DATE"
+                  className="h-10 w-45 light_border light_main bg-light_main px-4 focus:outline-none focus:ring-0 focus:border-light_dark transition-all duration-300"
+                />
+              </div>
+              <input
+                type="text"
+                value={taskNameInput}
+                onChange={handleChangeTaskNameInput}
+                placeholder="TASK NAME"
+                className="h-10 flex-1 light_border px-4"
+              />
+              </div>
+            
+          <Button onClick={handleConfirmToAddTask}>CONFIRM</Button>
+        </div>
+      </div>
+        
+      </section>
 
-
-      
-
-
-
-      <div className="flex flex-col p-6 gap-6 sm:px-12">
-        <div className="flex p-12 gap-4 light_border items-center bg-light_main">
-          ADD NEW TASK
-          <div className="flex flex-1 gap-2">
-            <DropdownInput label="PRIORITY" options={["High", "Medium", "Low"]} onSelect={handlePrioritySelectInput} className="w-30"/>
-            <DatePicker
-              selected={dueDate}
-              onChange={(date: Date | null) => setDueDate(date)}
-              dateFormat="yyyy-MM-dd HH:mm"  // Format to show both date and time
-              showTimeSelect  // Enable the time picker
-              timeFormat="HH:mm"  // Set time format (24-hour)
-              timeIntervals={15}  // Set time intervals (e.g., 15-minute increments)
-              placeholderText="SELECT DUE DATE"
-              className="w-full h-10 px-4 bg-light_main border-light_main light_border transition-all duration-300"
+      {/* Current Tasks */}
+      <section className="flex flex-col items-center gap-12 light_border bg-light_main px-4 py-12 sm:px-12">
+        <header className="flex flex-col gap-4">
+          <h2 className="text-2xl text-center">CURRENT TASK</h2>
+          <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
+            <span className="text-sm">SORT BY</span>
+            <DropdownInput
+              className="w-60"
+              label="TIME LEFT"
+              options={["TIME LEFT", "PRIORITY HIGH TO LOW", "PRIORITY LOW TO HIGH"]}
+              onSelect={setActiveSortOption}
             />
-            <input placeholder="TASK NAME" type="text" value={taskNameInput} className="flex-1 h-10 px-4 light_border" onChange={handleChangeTaskNameInput}/>
-            <Button onClick={handleConfirmToAddTask}>CONFIRM</Button>
           </div>
-      </div>
-        
+        </header>
 
-        <div className="flex flex-col items-center px-4 sm:px-12 py-12 gap-12 bg-light_main light_border">
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-center text-2xl">
-              CURRENT TASK
-            </div>
-            <div className="flex flex-col sm:flex-row xl justify-center items-center gap-2 sm:gap-4">
-              SORT BY
-              <DropdownInput 
-                className="w-60" 
-                label={"TIME LEFT"} 
-                options={["TIME LEFT", "PRIORITY HIGH TO LOW", "PRIORITY LOW TO HIGH"]}
-                onSelect={setSortOption}
-              />
+        {/* Header Row */}
+        <div className="hidden w-full items-center gap-2 bg-light_main px-2 sm:flex">
+          <div className="invisible h-10 w-10" />
+          <div className="hidden h-fit w-50 items-center justify-center md:flex">TIME LEFT</div>
+          <div className="flex flex-1 items-center justify-center px-5">TASK NAME</div>
+          <div className="hidden h-fit w-28 items-center justify-center lg:flex">PRIORITY</div>
+          <div className="hidden h-fit w-40 items-center justify-center xl:flex">DUE DATE</div>
+          <div className="hidden h-fit w-24 items-center justify-center xl:flex">DUE TIME</div>
+          <Button className="invisible">DELETE</Button>
+        </div>
 
+        {/* Tasks List */}
+        <div className="flex w-full flex-col gap-2">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="h-12 w-12 animate-spin rounded-full border-t-4 border-light_dark border-opacity-60" />
             </div>
-          </div>
-
-          <div className="flex w-full flex-col gap-2">
-            <div className="hidden sm:flex h-fit gap-2 px-2 bg-light_main items-center ">
-              <div className="invisible h-10 w-10"/> 
-              <div className="hidden md:flex w-50 h-fit items-center justify-center">TIME LEFT</div>
-              <div className="flex flex-1 px-5 items-center justify-center">TASKNAME</div>
-              <div className="hidden lg:flex w-28 h-fit items-center justify-center">PRIORITY</div>
-              <div className="hidden xl:flex w-40 h-fit items-center justify-center">DUE DATE</div>
-              <div className="hidden xl:flex w-24 h-fit items-center justify-center">DUE TIME</div>
-              <Button className="invisible">DELETE</Button>
-            </div>
-            {sortedActiveTasks.map((task) => (
+          ) : (
+            sortedActiveTasks.map(task => (
               <Task
-                key={task.id} 
-                {...task} 
+                key={task.id}
+                {...task}
                 onClickMarkAsDone={() => handleClickMarkAsDone(task.id)}
                 onClickDelete={() => handleClickDelete(task.id)}
               />
-            ))}
-          </div>
+            ))
+          )}
         </div>
-        
-        <div className="flex flex-col items-center p-12 gap-12 bg-light_main light_border filter brightness-92">
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-center text-2xl">
-              DONE TASK
-            </div>
-            <div className="flex justify-center items-center gap-4">
-              SORT BY
-              <DropdownInput 
-                className="w-60" 
-                label={"TIME LEFT"} 
-                options={["TIME LEFT", "PRIORITY HIGH TO LOW", "PRIORITY LOW TO HIGH"]}
-              />
-            </div>
+      </section>
+
+      {/* Done Tasks */}
+      <section className="flex flex-col items-center gap-12 light_border bg-light_main p-12 filter brightness-92">
+        <header className="flex flex-col gap-4">
+          <h2 className="text-2xl text-center">DONE TASK</h2>
+          <div className="flex items-center justify-center gap-4">
+            <span className="text-sm">SORT BY</span>
+            <DropdownInput
+              className="w-60"
+              label="TIME LEFT"
+              options={["TIME LEFT", "PRIORITY HIGH TO LOW", "PRIORITY LOW TO HIGH"]}
+              onSelect={setDoneSortOption}
+            />
           </div>
-          <div className="flex w-full flex-col gap-2">
-            <div className="hidden sm:flex h-fit gap-2 px-2 bg-light_main items-center ">
-              <div className="invisible h-10 w-10"/> 
-              <div className="hidden md:flex w-50 h-fit items-center justify-center">TIME LEFT</div>
-              <div className="flex flex-1 px-5 items-center justify-center">TASKNAME</div>
-              <div className="hidden lg:flex w-28 h-fit items-center justify-center">PRIORITY</div>
-              <div className="hidden xl:flex w-40 h-fit items-center justify-center">DUE DATE</div>
-              <div className="hidden xl:flex w-24 h-fit items-center justify-center">DUE TIME</div>
-              <Button className="invisible">DELETE</Button>
+        </header>
+
+        {/* Header Row */}
+        <div className="hidden w-full items-center gap-2 bg-light_main px-2 sm:flex">
+          <div className="invisible h-10 w-10" />
+          <div className="hidden h-fit w-50 items-center justify-center md:flex">TIME LEFT</div>
+          <div className="flex flex-1 items-center justify-center px-5">TASK NAME</div>
+          <div className="hidden h-fit w-28 items-center justify-center lg:flex">PRIORITY</div>
+          <div className="hidden h-fit w-40 items-center justify-center xl:flex">DUE DATE</div>
+          <div className="hidden h-fit w-24 items-center justify-center xl:flex">DUE TIME</div>
+          <Button className="invisible">DELETE</Button>
+        </div>
+
+        {/* Done Tasks List */}
+        <div className="flex w-full flex-col gap-2">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="h-12 w-12 animate-spin rounded-full border-t-4 border-light_dark border-opacity-60" />
             </div>
-            {sortedDoneTasks.map((task) => (
+          ) : (
+            sortedDoneTasks.map(task => (
               <Task
-                key={task.id} 
-                {...task} 
+                key={task.id}
+                {...task}
                 onClickMarkAsDone={() => handleClickMarkAsDone(task.id)}
                 onClickDelete={() => handleClickDelete(task.id)}
               />
-            ))}
-          </div>
+            ))
+          )}
         </div>
-      </div>
-      
-      <Button onClick={handleClickTest}>PRIMARY</Button>
-    </div>
+      </section>
+    </main>
+  </div>
   );
 };
 
