@@ -164,7 +164,7 @@ const CurrentTask: React.FC = () => {
     <main className="flex flex-col gap-6 p-6 sm:px-12">
       
       {/* Add New Task */}
-      <section className="flex flex-col xl:flex-row items-center gap-4 p-12 light_border bg-light_main">
+      <section className="hidden md:flex flex-col xl:flex-row items-center gap-4 p-12 light_border bg-light_main">
         <h2 className="text-lg">ADD NEW TASK</h2>
           <div className="flex flex-1 w-full items-center gap-4">
             <div className="flex flex-1 flex-col xl:flex-row items-center gap-4 xl:gap-2">
@@ -202,7 +202,14 @@ const CurrentTask: React.FC = () => {
         
       </section>
 
+      {/* Add new Task : Mobile */}
+      <Button className="md:hidden">
+        ADD TASK
+      </Button>
+
+
       {/* Current Tasks */}
+      {sortedActiveTasks.length > 0 && 
       <section className="flex flex-col items-center gap-12 light_border bg-light_main px-4 py-12 sm:px-12">
         <header className="flex flex-col gap-4">
           <h2 className="text-2xl text-center">CURRENT TASK</h2>
@@ -217,19 +224,20 @@ const CurrentTask: React.FC = () => {
           </div>
         </header>
 
-        {/* Header Row */}
-        <div className="hidden w-full items-center gap-2 bg-light_main px-2 sm:flex">
-          <div className="invisible h-10 w-10" />
-          <div className="hidden h-fit w-50 items-center justify-center md:flex">TIME LEFT</div>
-          <div className="flex flex-1 items-center justify-center px-5">TASK NAME</div>
-          <div className="hidden h-fit w-28 items-center justify-center lg:flex">PRIORITY</div>
-          <div className="hidden h-fit w-40 items-center justify-center xl:flex">DUE DATE</div>
-          <div className="hidden h-fit w-24 items-center justify-center xl:flex">DUE TIME</div>
-          <Button className="invisible">DELETE</Button>
-        </div>
+        
 
         {/* Tasks List */}
         <div className="flex w-full flex-col gap-2">
+          {/* Header Row */}
+          <div className="hidden w-full h-fit items-center gap-2 bg-light_main px-2 sm:flex">
+            <div className="invisible h-10 w-10" />
+            <div className="hidden h-fit w-50 items-center justify-center md:flex">TIME LEFT</div>
+            <div className="flex flex-1 items-center justify-center px-5">TASK NAME</div>
+            <div className="hidden h-fit w-28 items-center justify-center lg:flex">PRIORITY</div>
+            <div className="hidden h-fit w-40 items-center justify-center xl:flex">DUE DATE</div>
+            <div className="hidden h-fit w-24 items-center justify-center xl:flex">DUE TIME</div>
+            <Button className="invisible">DELETE</Button>
+          </div>
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="h-12 w-12 animate-spin rounded-full border-t-4 border-light_dark border-opacity-60" />
@@ -245,13 +253,14 @@ const CurrentTask: React.FC = () => {
             ))
           )}
         </div>
-      </section>
+      </section>}
 
       {/* Done Tasks */}
+      {sortedDoneTasks.length > 0 && 
       <section className="flex flex-col items-center gap-12 light_border bg-light_main p-12 filter brightness-92">
         <header className="flex flex-col gap-4">
           <h2 className="text-2xl text-center">DONE TASK</h2>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
             <span className="text-sm">SORT BY</span>
             <DropdownInput
               className="w-60"
@@ -262,19 +271,21 @@ const CurrentTask: React.FC = () => {
           </div>
         </header>
 
-        {/* Header Row */}
-        <div className="hidden w-full items-center gap-2 bg-light_main px-2 sm:flex">
-          <div className="invisible h-10 w-10" />
-          <div className="hidden h-fit w-50 items-center justify-center md:flex">TIME LEFT</div>
-          <div className="flex flex-1 items-center justify-center px-5">TASK NAME</div>
-          <div className="hidden h-fit w-28 items-center justify-center lg:flex">PRIORITY</div>
-          <div className="hidden h-fit w-40 items-center justify-center xl:flex">DUE DATE</div>
-          <div className="hidden h-fit w-24 items-center justify-center xl:flex">DUE TIME</div>
-          <Button className="invisible">DELETE</Button>
-        </div>
+        
 
         {/* Done Tasks List */}
+
         <div className="flex w-full flex-col gap-2">
+          {/* Header Row */}
+          <div className="hidden w-full h-fit items-center gap-2 bg-light_main px-2 sm:flex">
+            <div className="invisible h-fit w-10" />
+            <div className="hidden h-fit w-50 items-center justify-center md:flex">TIME LEFT</div>
+            <div className="flex flex-1 items-center justify-center px-5">TASK NAME</div>
+            <div className="hidden h-fit w-28 items-center justify-center lg:flex">PRIORITY</div>
+            <div className="hidden h-fit w-40 items-center justify-center xl:flex">DUE DATE</div>
+            <div className="hidden h-fit w-24 items-center justify-center xl:flex">DUE TIME</div>
+            <Button className="invisible h-fit">DELETE</Button>
+          </div>
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="h-12 w-12 animate-spin rounded-full border-t-4 border-light_dark border-opacity-60" />
@@ -290,7 +301,7 @@ const CurrentTask: React.FC = () => {
             ))
           )}
         </div>
-      </section>
+      </section>}
     </main>
   </div>
   );
