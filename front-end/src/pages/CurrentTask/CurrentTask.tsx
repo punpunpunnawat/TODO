@@ -41,12 +41,14 @@ const fetchTasksFromDatabase = async (): Promise<TaskType[]> => {
   });
 };
 
-const CurrentTask: React.FC = () => {
+const CurrentTask = () => {
 
   //State
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const activeTasks = tasks.filter(task => !task.done);
   const doneTasks = tasks.filter(task => task.done);
+
+  //Add new task input
   const [priorityInput, setPriorityInput] = useState<Priority>(Priority.MEDIUM);
   const [dueTimeInput, setDueTimeInput] = useState<Date | null>(null);
   const [taskNameInput, setTaskNameInput] = useState<string>("");
@@ -61,7 +63,6 @@ const CurrentTask: React.FC = () => {
       setTasks(tasksFromDB);
       setLoading(false)
     };
-
     fetchData();
   }, []);
 
@@ -207,101 +208,115 @@ const CurrentTask: React.FC = () => {
         ADD TASK
       </Button>
 
-
-      {/* Current Tasks */}
-      {sortedActiveTasks.length > 0 && 
+      {/*Current Tasks List */}
       <section className="flex flex-col items-center gap-12 light_border bg-light_main px-4 py-12 sm:px-12">
-        <header className="flex flex-col gap-4">
-          <h2 className="text-2xl text-center">CURRENT TASK</h2>
-          <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
-            <span className="text-sm">SORT BY</span>
-            <DropdownInput
-              className="w-60"
-              label="TIME LEFT"
-              options={["TIME LEFT", "PRIORITY HIGH TO LOW", "PRIORITY LOW TO HIGH"]}
-              onSelect={setActiveSortOption}
-            />
+        {/* if Loading */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12 w-full">
+            <div className="h-12 w-12 animate-spin rounded-full border-t-4 border-light_dark border-opacity-60" />
           </div>
-        </header>
-
-        
-
-        {/* Tasks List */}
-        <div className="flex w-full flex-col gap-2">
-          {/* Header Row */}
-          <div className="hidden w-full h-fit items-center gap-2 bg-light_main px-2 sm:flex">
-            <div className="invisible h-10 w-10" />
-            <div className="hidden h-fit w-50 items-center justify-center md:flex">TIME LEFT</div>
-            <div className="flex flex-1 items-center justify-center px-5">TASK NAME</div>
-            <div className="hidden h-fit w-28 items-center justify-center lg:flex">PRIORITY</div>
-            <div className="hidden h-fit w-40 items-center justify-center xl:flex">DUE DATE</div>
-            <div className="hidden h-fit w-24 items-center justify-center xl:flex">DUE TIME</div>
-            <Button className="invisible">DELETE</Button>
+        ) :
+        // if have no task show icon
+        sortedActiveTasks.length === 0 ? (
+          <div className="flex justify-center items-center py-12 text-center w-full">
+            Hello World
           </div>
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="h-12 w-12 animate-spin rounded-full border-t-4 border-light_dark border-opacity-60" />
+        ) :
+        // default task list show
+        (
+          <>
+          <header className="flex flex-col gap-4">
+            <h2 className="text-2xl text-center">CURRENT TASK</h2>
+            <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
+              <span className="text-sm">SORT BY</span>
+              <DropdownInput
+                className="w-60"
+                label="TIME LEFT"
+                options={["TIME LEFT", "PRIORITY HIGH TO LOW", "PRIORITY LOW TO HIGH"]}
+                onSelect={setActiveSortOption}
+              />
             </div>
-          ) : (
-            sortedActiveTasks.map(task => (
+          </header>
+
+          <div className="flex w-full flex-col gap-2">
+            {/* Header Row */}
+            <div className="hidden w-full h-fit items-center gap-2 bg-light_main px-2 sm:flex">
+              <div className="invisible h-10 w-10" />
+              <div className="hidden h-fit w-50 items-center justify-center md:flex">TIME LEFT</div>
+              <div className="flex flex-1 items-center justify-center px-5">TASK NAME</div>
+              <div className="hidden h-fit w-28 items-center justify-center lg:flex">PRIORITY</div>
+              <div className="hidden h-fit w-40 items-center justify-center xl:flex">DUE DATE</div>
+              <div className="hidden h-fit w-24 items-center justify-center xl:flex">DUE TIME</div>
+              <Button className="invisible">DELETE</Button>
+            </div>
+
+            {/* Tasks */}
+            {sortedActiveTasks.map(task => (
               <Task
                 key={task.id}
                 {...task}
                 onClickMarkAsDone={() => handleClickMarkAsDone(task.id)}
                 onClickDelete={() => handleClickDelete(task.id)}
               />
-            ))
-          )}
-        </div>
-      </section>}
-
-      {/* Done Tasks */}
-      {sortedDoneTasks.length > 0 && 
-      <section className="flex flex-col items-center gap-12 light_border bg-light_main p-12 filter brightness-92">
-        <header className="flex flex-col gap-4">
-          <h2 className="text-2xl text-center">DONE TASK</h2>
-          <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
-            <span className="text-sm">SORT BY</span>
-            <DropdownInput
-              className="w-60"
-              label="TIME LEFT"
-              options={["TIME LEFT", "PRIORITY HIGH TO LOW", "PRIORITY LOW TO HIGH"]}
-              onSelect={setDoneSortOption}
-            />
+            ))}
           </div>
-        </header>
+            
+          </>
+        )}
+      </section>
 
-        
 
-        {/* Done Tasks List */}
-
-        <div className="flex w-full flex-col gap-2">
-          {/* Header Row */}
-          <div className="hidden w-full h-fit items-center gap-2 bg-light_main px-2 sm:flex">
-            <div className="invisible h-fit w-10" />
-            <div className="hidden h-fit w-50 items-center justify-center md:flex">TIME LEFT</div>
-            <div className="flex flex-1 items-center justify-center px-5">TASK NAME</div>
-            <div className="hidden h-fit w-28 items-center justify-center lg:flex">PRIORITY</div>
-            <div className="hidden h-fit w-40 items-center justify-center xl:flex">DUE DATE</div>
-            <div className="hidden h-fit w-24 items-center justify-center xl:flex">DUE TIME</div>
-            <Button className="invisible h-fit">DELETE</Button>
+      {/*Done Tasks List */}
+      <section className="flex flex-col items-center gap-12 light_border bg-light_main px-4 py-12 sm:px-12 brightness-95">
+        {loading ? (
+          <div className="flex items-center justify-center py-12 w-full">
+            <div className="h-12 w-12 animate-spin rounded-full border-t-4 border-light_dark border-opacity-60" />
           </div>
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="h-12 w-12 animate-spin rounded-full border-t-4 border-light_dark border-opacity-60" />
+        ) : sortedDoneTasks.length === 0 ? (
+          <div className="flex justify-center items-center py-12 text-center w-full">
+            Hello World
+          </div>
+        ) : (
+          <>
+          <header className="flex flex-col gap-4">
+            <h2 className="text-2xl text-center">DONE TASK</h2>
+            <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
+              <span className="text-sm">SORT BY</span>
+              <DropdownInput
+                className="w-60"
+                label="TIME LEFT"
+                options={["TIME LEFT", "PRIORITY HIGH TO LOW", "PRIORITY LOW TO HIGH"]}
+                onSelect={setDoneSortOption}
+              />
             </div>
-          ) : (
-            sortedDoneTasks.map(task => (
+          </header>
+
+          <div className="flex w-full flex-col gap-2">
+            {/* Header Row */}
+            <div className="hidden w-full h-fit items-center gap-2 bg-light_main px-2 sm:flex">
+              <div className="invisible h-10 w-10" />
+              <div className="hidden h-fit w-50 items-center justify-center md:flex">TIME LEFT</div>
+              <div className="flex flex-1 items-center justify-center px-5">TASK NAME</div>
+              <div className="hidden h-fit w-28 items-center justify-center lg:flex">PRIORITY</div>
+              <div className="hidden h-fit w-40 items-center justify-center xl:flex">DUE DATE</div>
+              <div className="hidden h-fit w-24 items-center justify-center xl:flex">DUE TIME</div>
+              <Button className="invisible">DELETE</Button>
+            </div>
+
+            {/* Tasks */}
+            {sortedDoneTasks.map(task => (
               <Task
                 key={task.id}
                 {...task}
                 onClickMarkAsDone={() => handleClickMarkAsDone(task.id)}
                 onClickDelete={() => handleClickDelete(task.id)}
               />
-            ))
-          )}
-        </div>
-      </section>}
+            ))}
+          </div>
+            
+          </>
+        )}
+      </section>
     </main>
   </div>
   );
