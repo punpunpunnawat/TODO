@@ -13,7 +13,7 @@ interface TaskProp {
   onClickDelete?: () => void;
 }
 
-const Task = ({ label, priority, dueTime, onClickMarkAsDone, onClickDelete }: TaskProp) => {
+const Task = ({ label, priority, dueTime, done, onClickMarkAsDone, onClickDelete }: TaskProp) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
 
   // Update the timeLeft every minute
@@ -23,7 +23,8 @@ const Task = ({ label, priority, dueTime, onClickMarkAsDone, onClickDelete }: Ta
       const now = new Date();
       const diff = dueTime.getTime() - now.getTime();
 
-      if (diff <= 0) return "Due now!";
+      if (done) return "DONE";
+      if (diff <= 0) return "EXPIRED";
 
       const minutes = Math.floor(diff / (1000 * 60)) % 60;
       const hours = Math.floor(diff / (1000 * 60 * 60)) % 24;
@@ -47,7 +48,7 @@ const Task = ({ label, priority, dueTime, onClickMarkAsDone, onClickDelete }: Ta
 
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
-  }, [dueTime]); // Re-run the effect when dueTime changes
+  }, [dueTime, done]); // Re-run the effect when dueTime changes
 
   const handleClickMarkAsDone = () => {
     onClickMarkAsDone?.();
@@ -92,13 +93,29 @@ const Task = ({ label, priority, dueTime, onClickMarkAsDone, onClickDelete }: Ta
 
       {/* Mobile layout */}
       <div className="sm:hidden flex flex-col gap-2 p-4 bg-light_main light_border">
-        <div></div>
-        <div className="flex">
-          <div className="flex flex-grow h-10 items-center justify-center light_border_disable">{date}</div>
-          <div className="flex flex-grow h-10 items-center justify-center light_border_disable">{time}</div>
+        <div className="flex gap-2">
+          <div
+              className={`flex w-12 h-10 p-4 items-center justify-center light_border_disable
+                ${priority === Priority.HIGH
+                  ? "bg-priority_high"
+                  : priority === Priority.MEDIUM
+                    ? "bg-priority_medium"
+                    : "bg-priority_low"
+                }`}
+            >
+              {priority === Priority.HIGH ? "H" : priority === Priority.MEDIUM ? "M" : "L"}
+          </div>
+          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{label}</div>
+        </div >
+        <div className="flex gap-2">
+          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{date}</div>
+          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{time}</div>
         </div>
-        <div><Button onClick={handleClickDelete} className="w-full">DELETE</Button></div>
+        <div className="flex gap-2">
+          <Button onClick={handleClickDelete} className="flex-1">DELETE</Button>
+        </div>
       </div>
+
     </>
   );
 };

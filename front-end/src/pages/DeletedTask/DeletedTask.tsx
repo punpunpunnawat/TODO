@@ -4,7 +4,7 @@ const CurrentTask = () => {
 
   return (
     <div>
-      <NavigationBar username="punpunpunnawat"/>
+      <NavigationBar username="punpunpunnawat" loggedIn/>
        task ja</div>
   );
 };
