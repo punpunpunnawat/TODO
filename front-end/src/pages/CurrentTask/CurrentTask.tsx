@@ -7,35 +7,33 @@ import NavigationBar from "../../components/NavigationBar";
 import DropdownInput from "../../components/Dropdown";
 import "react-datepicker/dist/react-datepicker.css";
 
-// Simulate an async fetch from a database
 const fetchTasksFromDatabase = async (): Promise<TaskType[]> => {
-  const mockData = [
-    { id: 1, label: "Buy milk", priority: Priority.HIGH, dueTime: "2025-04-25T03:00:00+07:00", done: false },
-    { id: 2, label: "Write code", priority: Priority.MEDIUM, dueTime: "2025-04-28T14:00:00+07:00", done: true },
-    { id: 3, label: "Walk the dog", priority: Priority.LOW, dueTime: "2025-04-29T07:30:00+07:00", done: false },
-    { id: 4, label: "Attend meeting", priority: Priority.HIGH, dueTime: "2025-04-28T10:30:00+07:00", done: false },
-    { id: 5, label: "Call plumber", priority: Priority.MEDIUM, dueTime: "2025-04-30T16:00:00+07:00", done: false },
-    { id: 6, label: "Read a book", priority: Priority.LOW, dueTime: "2025-05-01T20:00:00+07:00", done: true },
-    { id: 7, label: "Submit report", priority: Priority.HIGH, dueTime: "2025-04-28T12:00:00+07:00", done: true },
-    { id: 8, label: "Grocery shopping", priority: Priority.MEDIUM, dueTime: "2025-05-02T18:00:00+07:00", done: false },
-    { id: 9, label: "Gym workout", priority: Priority.LOW, dueTime: "2025-05-01T06:30:00+07:00", done: true },
-    { id: 10, label: "Prepare dinner", priority: Priority.MEDIUM, dueTime: "2025-04-28T19:00:00+07:00", done: false },
-    { id: 11, label: "Dentist appointment", priority: Priority.HIGH, dueTime: "2025-04-29T11:00:00+07:00", done: false },
-    { id: 12, label: "Email client", priority: Priority.MEDIUM, dueTime: "2025-04-30T09:45:00+07:00", done: true },
-  ];
-
-  // Simulate a delay as if fetching from a database
-  return new Promise(resolve => {
-    setTimeout(() => {
-      // Convert the date strings to Date objects
-      const tasksWithDates = mockData.map(task => ({
-        ...task,
-        dueTime: new Date(task.dueTime), // Convert date string to Date object
-      }));
-      resolve(tasksWithDates);
-    }, 1000); // Simulate a 1-second delay
+  return new Promise<TaskType[]>((resolve, reject) => {
+    fetch("http://localhost:8080/tasks") // Replace with your backend endpoint
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch tasks");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // Assuming the response is an array of objects with keys `id`, `label`, `priority`, `dueTime`, `done`
+        const tasksWithDates: TaskType[] = data.map((task: { id: number; label: string; priority: string; dueTime: string; done: boolean }) => ({
+          ...task,
+          dueTime: new Date(task.dueTime), // Convert the string to a Date object
+          priority: Priority[task.priority as keyof typeof Priority], // Use keyof typeof Priority to ensure correct typing
+        }));
+        console.log(tasksWithDates);
+        resolve(tasksWithDates); // Resolve the Promise with correctly typed tasks
+      })
+      .catch((err) => {
+        console.error("Error fetching tasks:", err);
+        reject(err); // Reject in case of an error
+      });
   });
 };
+
+
 
 const CurrentTask = () => {
 
@@ -55,12 +53,18 @@ const CurrentTask = () => {
   // Fetch tasks from the "database" when the component mounts
   useEffect(() => {
     const fetchData = async () => {
-      const tasksFromDB = await fetchTasksFromDatabase();
-      setTasks(tasksFromDB);
-      setLoading(false)
+      try {
+        const tasksFromDB = await fetchTasksFromDatabase();
+        setTasks(tasksFromDB);
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to load tasks:", err);
+        setLoading(false); // Set loading to false even if an error occurs
+      }
     };
     fetchData();
   }, []);
+  
 
   const handleClickMarkAsDone = (id: number) => {
     setTasks(prevTasks =>
@@ -81,7 +85,7 @@ const CurrentTask = () => {
   const handleConfirmToAddTask = () => {
     console.log(dueTimeInput);  // Log the original selected due date
   
-    if (!taskNameInput || !dueTimeInput) {
+    if (!taskNameInput || !dueTimeInput || !priorityInput) {
       alert("Please enter a task name and select a due date/time.");
       return;
     }
@@ -147,7 +151,7 @@ const CurrentTask = () => {
   };
   const sortedActiveTasks = sortTasks(activeTasks, activeSortOption);
   const sortedDoneTasks = sortTasks(doneTasks, doneSortOption);
-  
+  console.log(tasks)
   return (
     <div>
       <NavigationBar username="punpunpunnawat" loggedIn />
