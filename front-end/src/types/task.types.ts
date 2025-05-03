@@ -5,9 +5,19 @@ export enum Priority {
 }
 
 export type TaskType = {
-  id: number;
+  id: string;
   label: string;
   priority: Priority;
   dueTime: Date;
   done: boolean;
+}
+
+export interface TaskContextType {
+  tasks: TaskType[];
+  loading: boolean;
+  error: string | null;
+  fetchTasks: () => Promise<void>;
+  addTask: (taskInput: TaskType) => Promise<void>;
+  updateTask: (id: string, taskInput: Partial<TaskType>) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
 }

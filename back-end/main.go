@@ -20,6 +20,23 @@ type Task struct {
     Done     bool   `json:"done"`
 }
 
+func enableCORS(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // Allow CORS from the frontend URL
+        w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173") // Adjust this for your frontend URL
+        w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+        // Handle preflight requests
+        if r.Method == "OPTIONS" {
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+
+        next.ServeHTTP(w, r)
+    })
+}
+
 func main() {
     dsn := "root:1234@tcp(127.0.0.1:3306)/todo_db"
     db, err := sql.Open("mysql", dsn)
@@ -28,10 +45,10 @@ func main() {
     }
     defer db.Close()
 
+    // Define the /tasks route for GET and POST
     http.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Access-Control-Allow-Origin", "*")
         w.Header().Set("Content-Type", "application/json")
-
+    
         switch r.Method {
         case http.MethodGet:
             rows, err := db.Query("SELECT * FROM tasks")
@@ -40,8 +57,9 @@ func main() {
                 return
             }
             defer rows.Close()
-
+        
             var tasks []Task
+        
             for rows.Next() {
                 var t Task
                 err := rows.Scan(&t.ID, &t.Label, &t.Priority, &t.DueTime, &t.Done)
@@ -51,6 +69,8 @@ func main() {
                 }
                 tasks = append(tasks, t)
             }
+        
+            // This will return [] if no tasks found
             json.NewEncoder(w).Encode(tasks)
 
         case http.MethodPost:
@@ -60,15 +80,23 @@ func main() {
                 return
             }
 
-            res, err := db.Exec("INSERT INTO tasks (label, priority, due_time, done) VALUES (?, ?, ?, ?)",
+            // Insert the new task into the database
+            result, err := db.Exec("INSERT INTO tasks (label, priority, due_time, done) VALUES (?, ?, ?, ?)",
                 t.Label, t.Priority, t.DueTime, t.Done)
             if err != nil {
                 http.Error(w, err.Error(), http.StatusInternalServerError)
                 return
             }
 
-            id, _ := res.LastInsertId()
-            t.ID = int(id)
+            // Get the inserted task's ID
+            lastInsertID, err := result.LastInsertId()
+            if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+            }
+            t.ID = int(lastInsertID)
+
+            // Respond with the new task
             json.NewEncoder(w).Encode(t)
 
         default:
@@ -76,9 +104,8 @@ func main() {
         }
     })
 
-    // สำหรับ PUT และ DELETE เช่น /tasks/1
+    // Define the /tasks/{id} route for PUT and DELETE
     http.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Access-Control-Allow-Origin", "*")
         w.Header().Set("Content-Type", "application/json")
 
         idStr := strings.TrimPrefix(r.URL.Path, "/tasks/")
@@ -120,6 +147,7 @@ func main() {
         }
     })
 
+    // Wrap the handlers with the CORS middleware
     fmt.Println("Server running at http://localhost:8080")
-    log.Fatal(http.ListenAndServe(":8080", nil))
+    log.Fatal(http.ListenAndServe(":8080", enableCORS(http.DefaultServeMux)))
 }

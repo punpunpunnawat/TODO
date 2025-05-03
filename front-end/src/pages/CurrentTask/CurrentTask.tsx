@@ -6,86 +6,52 @@ import Button from "../../components/Button";
 import NavigationBar from "../../components/NavigationBar";
 import DropdownInput from "../../components/Dropdown";
 import "react-datepicker/dist/react-datepicker.css";
-
-const fetchTasksFromDatabase = async (): Promise<TaskType[]> => {
-  return new Promise<TaskType[]>((resolve, reject) => {
-    fetch("http://localhost:8080/tasks") // Replace with your backend endpoint
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to fetch tasks");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        // Assuming the response is an array of objects with keys `id`, `label`, `priority`, `dueTime`, `done`
-        const tasksWithDates: TaskType[] = data.map((task: { id: number; label: string; priority: string; dueTime: string; done: boolean }) => ({
-          ...task,
-          dueTime: new Date(task.dueTime), // Convert the string to a Date object
-          priority: Priority[task.priority as keyof typeof Priority], // Use keyof typeof Priority to ensure correct typing
-        }));
-        console.log(tasksWithDates);
-        resolve(tasksWithDates); // Resolve the Promise with correctly typed tasks
-      })
-      .catch((err) => {
-        console.error("Error fetching tasks:", err);
-        reject(err); // Reject in case of an error
-      });
-  });
-};
-
+import useTask from "../../hooks/useTask";
+import { v4 as uuidv4 } from 'uuid';
 
 
 const CurrentTask = () => {
 
+  const {
+    tasks,
+    loading,
+    addTask,
+    deleteTask,
+    updateTask,
+  } = useTask();
+
+  
   //State
-  const [tasks, setTasks] = useState<TaskType[]>([]);
   const activeTasks = tasks.filter(task => !task.done);
   const doneTasks = tasks.filter(task => task.done);
 
+  console.log(activeTasks)
+  console.log(doneTasks)
   //Add new task input
   const [priorityInput, setPriorityInput] = useState<Priority>(Priority.MEDIUM);
   const [dueTimeInput, setDueTimeInput] = useState<Date | null>(null);
   const [taskNameInput, setTaskNameInput] = useState<string>("");
   const [activeSortOption, setActiveSortOption] = useState<string>("TIME LEFT");
   const [doneSortOption, setDoneSortOption] = useState<string>("TIME LEFT");
-  const [loading, setLoading] = useState(true);
-
-  // Fetch tasks from the "database" when the component mounts
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const tasksFromDB = await fetchTasksFromDatabase();
-        setTasks(tasksFromDB);
-        setLoading(false);
-      } catch (err) {
-        console.error("Failed to load tasks:", err);
-        setLoading(false); // Set loading to false even if an error occurs
-      }
-    };
-    fetchData();
-  }, []);
   
 
-  const handleClickMarkAsDone = (id: number) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task =>
-        task.id === id ? { ...task, done: !task.done } : task
-      )
-    );
-  };
-
-  const handleClickDelete = (id: number) => {
-    setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
-  };
-
-  const handleChangeTaskNameInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTaskNameInput(event.target.value);
-  }
-
-  const handleConfirmToAddTask = () => {
-    console.log(dueTimeInput);  // Log the original selected due date
+  const handleClickMarkAsDone = async (id: string) => {
+    const task = tasks.find(task => task.id === id);
+    if (!task) return;
   
-    if (!taskNameInput || !dueTimeInput || !priorityInput) {
+    await updateTask(id, { ...task, done: !task.done });
+  };
+  
+
+  const handleClickDelete = async (id: string) => {
+    const confirmed = window.confirm("Are you sure you want to delete this task?");
+    if (confirmed) {
+      await deleteTask(id);
+    }
+  };
+  
+  const handleConfirmToAddTask = async () => {
+    if (!taskNameInput || !dueTimeInput) {
       alert("Please enter a task name and select a due date/time.");
       return;
     }
@@ -96,23 +62,26 @@ const CurrentTask = () => {
       return;
     }
   
-    // Create the new task with the adjusted time
-    const newTask: TaskType = {
-      id: tasks.length > 0 ? tasks[tasks.length - 1].id + 1 : 1,
+    const newTask = {
+      id: uuidv4(),
       label: taskNameInput,
       priority: priorityInput,
-      dueTime: dueTimeInput, // "YYYY-MM-DD"
+      dueTime: dueTimeInput,
       done: false,
     };
-
-    // Add the new task
-    setTasks(prevTasks => [...prevTasks, newTask]);
   
-    // Reset input fields
+    await addTask(newTask);
     setTaskNameInput("");
     setDueTimeInput(null);
     setPriorityInput(Priority.MEDIUM);
   };
+  
+  
+
+  const handleChangeTaskNameInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTaskNameInput(event.target.value);
+  }
+  
 
   const handlePrioritySelectInput = (selectedPriority: string) => {
     switch (selectedPriority) {
@@ -132,6 +101,7 @@ const CurrentTask = () => {
 
   const sortTasks = (tasks: TaskType[], sortBy: string) => {
     return [...tasks].sort((a, b) => {
+      console.log(tasks)
       if (sortBy === "TIME LEFT") {
         const aDate = new Date(`${a.dueTime}`);
         const bDate = new Date(`${b.dueTime}`);

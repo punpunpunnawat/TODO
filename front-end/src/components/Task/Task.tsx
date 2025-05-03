@@ -4,7 +4,7 @@ import { Priority } from "../../types/task.types";
 import { useState, useEffect } from "react";
 
 interface TaskProp {
-  id: number;
+  id: string;
   label: string;
   priority: Priority;
   dueTime: Date;
@@ -15,7 +15,8 @@ interface TaskProp {
 
 const Task = ({ label, priority, dueTime, done, onClickMarkAsDone, onClickDelete }: TaskProp) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
-
+  // console.log('dueTime type:', typeof dueTime);
+  // console.log('dueTime value:', dueTime);
   // Update the timeLeft every minute
   useEffect(() => {
     // Function to calculate the time left
@@ -59,8 +60,11 @@ const Task = ({ label, priority, dueTime, done, onClickMarkAsDone, onClickDelete
   };
 
   // Split date and time
-  const date = dueTime.toLocaleDateString(); // Format: "4/25/2025"
-  const time = dueTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Format: "12:30 PM"
+  const date = dueTime instanceof Date ? dueTime.toLocaleDateString() : "Invalid Date";
+  const time = dueTime instanceof Date
+    ? dueTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : "Invalid Time";
+
 
   return (
     <>
