@@ -51,36 +51,80 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     fetchTasks();
   }, []); // empty dependency array ensures it runs only once on mount
 
-  // Methods for adding, updating, and deleting tasks
-  const addTask = async (taskInput: TaskType) => {
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskInput),
-      });
-      if (!res.ok) throw new Error('Failed to add task');
-      await fetchTasks(); // re-fetch tasks after adding
-    } catch (err) {
-      console.error(err);
-      setError('Failed to add task');
-    }
-  };
+  // Helper function to format dueTime and priority
+const formatTaskFields = (taskInput: Partial<TaskType>) => {
+  const taskToSend: Record<string, unknown> = { ...taskInput };
 
-  const updateTask = async (id: string, taskInput: Partial<TaskType>) => {
-    try {
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskInput),
-      });
-      if (!res.ok) throw new Error('Failed to update task');
-      await fetchTasks(); // re-fetch tasks after updating
-    } catch (err) {
-      console.error(err);
-      setError('Failed to update task');
-    }
-  };
+  // Convert Date object to MySQL DATETIME format (YYYY-MM-DD HH:MM:SS)
+  if (taskInput.dueTime instanceof Date) {
+    taskToSend.dueTime = formatDueTime(taskInput.dueTime);
+  }
+
+  // Ensure priority is a string ('HIGH', etc.)
+  if (typeof taskInput.priority === 'number') {
+    taskToSend.priority = Priority[taskInput.priority];
+  }
+
+  return taskToSend;
+};
+
+// Helper function to format Date as YYYY-MM-DD HH:MM:SS
+const formatDueTime = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+// Usage in addTask
+const addTask = async (taskInput: TaskType) => {
+  try {
+    const taskToSend = formatTaskFields(taskInput); // Use the consolidated function
+
+    console.log("POST payload:", taskToSend); // ✅ Log the data you're sending
+
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(taskToSend),
+    });
+
+    if (!res.ok) throw new Error('Failed to add task');
+    await fetchTasks(); // re-fetch tasks after adding
+  } catch (err) {
+    console.error(err);
+    setError('Failed to add task');
+  }
+};
+
+// Usage in updateTask
+const updateTask = async (id: string, taskInput: Partial<TaskType>) => {
+  console.log("mark as done 2");
+  console.log(taskInput);
+
+  const taskToSend = formatTaskFields(taskInput); // Use the consolidated function
+
+  console.log(taskToSend);
+
+  try {
+    const res = await fetch(`${API_URL}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(taskToSend),
+    });
+    if (!res.ok) throw new Error('Failed to update task');
+    await fetchTasks();
+  } catch (err) {
+    console.error(err);
+    setError('Failed to update task');
+  }
+};
+
+  
 
   const deleteTask = async (id: string) => {
     try {

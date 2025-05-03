@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Priority, TaskType } from "../../types/task.types";
 import { default as DatePicker } from "react-datepicker";
 import Task from "../../components/Task";
@@ -36,10 +36,18 @@ const CurrentTask = () => {
   
 
   const handleClickMarkAsDone = async (id: string) => {
+    console.log("mask as done 1")
     const task = tasks.find(task => task.id === id);
     if (!task) return;
-  
-    await updateTask(id, { ...task, done: !task.done });
+    console.log(task)
+
+    const updatedTask = { 
+      ...task, 
+      done: !task.done, 
+    };
+
+    
+    await updateTask(id, updatedTask);
   };
   
 
@@ -69,7 +77,8 @@ const CurrentTask = () => {
       dueTime: dueTimeInput,
       done: false,
     };
-  
+    
+    console.log(newTask)
     await addTask(newTask);
     setTaskNameInput("");
     setDueTimeInput(null);
