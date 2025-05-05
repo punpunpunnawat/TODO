@@ -19,23 +19,16 @@ const CurrentTask = () => {
     setTasks
   } = useTask();
 
-  // State
+  //Define tasks
   const activeTasks = tasks.filter(task => !task.completed && !task.deleted);
   const completeTasks = tasks.filter(task => task.completed && !task.deleted);
 
-
-  console.log(activeTasks)
-  console.log(completeTasks)
   //Add new task input
   const [priorityInput, setPriorityInput] = useState<Priority>(Priority.MEDIUM);
   const [dueTimeInput, setDueTimeInput] = useState<Date | null>(null);
   const [taskNameInput, setTaskNameInput] = useState<string>("");
   const [activeSortOption, setActiveSortOption] = useState<string>("TIME LEFT");
   const [completeSortOption, setCompleteSortOption] = useState<string>("COMPLETE DATE");
-  
-  // useEffect(() => {
-  //   fetchTasks(); // Refresh tasks every time this page is entered
-  // }, []);
   
   const handleClickMarkAsDone = async (id: string) => {
     const task = tasks.find(task => task.id === id);
@@ -56,9 +49,6 @@ const CurrentTask = () => {
     );
   };
   
-
-  
-
   const handleClickDelete = async (id: string) => {
     const confirmed = window.confirm("Are you sure you want to delete this task?");
     if (!confirmed) return;
@@ -70,10 +60,10 @@ const CurrentTask = () => {
     const updatedTask = {
       ...task,
       deleted: true,
-      deleteTime: new Date(), // Set delete time to now
+      deleteTime: new Date(),
     };
 
-    // Update the task in the database (without re-fetching all tasks)
+    // Update the task in the database
     await updateTask(id, updatedTask);
 
     // Remove the task from the local state without re-fetching
@@ -117,14 +107,10 @@ const CurrentTask = () => {
     setPriorityInput(Priority.MEDIUM);
   };
   
-  
-  
-
   const handleChangeTaskNameInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTaskNameInput(event.target.value);
   }
   
-
   const handlePrioritySelectInput = (selectedPriority: string) => {
     switch (selectedPriority) {
       case "HIGH":
@@ -167,8 +153,10 @@ const CurrentTask = () => {
       return 0;
     });
   };
+
   const sortedActiveTasks = sortTasks(activeTasks, activeSortOption);
   const sortedcompleteTasks = sortTasks(completeTasks, completeSortOption);
+  
   console.log(tasks)
   return (
     <div>

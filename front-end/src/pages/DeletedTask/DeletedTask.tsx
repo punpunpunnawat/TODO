@@ -10,6 +10,7 @@ const CurrentTask = () => {
   const {
     tasks,
     loading,
+    setTasks,
     updateTask,
     fetchTasks
   } = useTask();
@@ -60,6 +61,7 @@ const CurrentTask = () => {
     };
   
     await updateTask(id, updatedTask);
+    setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
   }
 
   return (
