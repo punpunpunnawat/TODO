@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Priority, TaskType } from "../../types/task.types";
 import { default as DatePicker } from "react-datepicker";
 import Task from "../../components/Task";
@@ -16,7 +16,7 @@ const CurrentTask = () => {
     loading,
     addTask,
     updateTask,
-    fetchTasks
+    setTasks
   } = useTask();
 
   // State
@@ -37,37 +37,49 @@ const CurrentTask = () => {
   //   fetchTasks(); // Refresh tasks every time this page is entered
   // }, []);
   
-const handleClickMarkAsDone = async (id: string) => {
-  const task = tasks.find(task => task.id === id);
-  if (!task) return;
-
-  const updatedTask = {
-    ...task,
-    completed: !task.completed,
-    completeTime: new Date(), // Set to current time
+  const handleClickMarkAsDone = async (id: string) => {
+    const task = tasks.find(task => task.id === id);
+    if (!task) return;
+  
+    const updatedTask = {
+      ...task,
+      completed: !task.completed,
+      completeTime: new Date(), // Set to current time when marked as done
+    };
+  
+    // Update the task in the database
+    await updateTask(id, updatedTask);
+  
+    // Update the local state to reflect the completion status without re-fetching
+    setTasks(prevTasks =>
+      prevTasks.map(task => (task.id === id ? updatedTask : task))
+    );
   };
-
-  await updateTask(id, updatedTask);
-};
+  
 
   
 
-const handleClickDelete = async (id: string) => {
-  const confirmed = window.confirm("Are you sure you want to delete this task?");
-  if (!confirmed) return;
+  const handleClickDelete = async (id: string) => {
+    const confirmed = window.confirm("Are you sure you want to delete this task?");
+    if (!confirmed) return;
 
-  const task = tasks.find(task => task.id === id);
-  if (!task) return;
+    const task = tasks.find(task => task.id === id);
+    if (!task) return;
 
-  const updatedTask = {
-    ...task,
-    deleted: true,
-    deleteTime: new Date(), // Set delete time to now
+    // Mark the task as deleted in the database
+    const updatedTask = {
+      ...task,
+      deleted: true,
+      deleteTime: new Date(), // Set delete time to now
+    };
+
+    // Update the task in the database (without re-fetching all tasks)
+    await updateTask(id, updatedTask);
+
+    // Remove the task from the local state without re-fetching
+    setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
   };
 
-  await updateTask(id, updatedTask);
-
-};
 
   
   const handleConfirmToAddTask = async () => {
@@ -92,15 +104,19 @@ const handleClickDelete = async (id: string) => {
       completeTime: new Date('1000-01-01T00:00:00'),
       deleteTime: new Date('1000-01-01T00:00:00')
     };
-    
-    
-    
-    console.log(newTask)
+  
+    // Add new task to the database
     await addTask(newTask);
+  
+    // Add the new task directly to local state without re-fetching
+    setTasks(prevTasks => [...prevTasks, newTask]);
+  
+    // Clear input fields
     setTaskNameInput("");
     setDueTimeInput(null);
     setPriorityInput(Priority.MEDIUM);
   };
+  
   
   
 

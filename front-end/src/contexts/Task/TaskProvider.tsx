@@ -109,7 +109,7 @@ const addTask = async (taskInput: TaskType) => {
     });
 
     if (!res.ok) throw new Error('Failed to add task');
-    await fetchTasks(); // re-fetch tasks after adding
+    //await fetchTasks(); // re-fetch tasks after adding
   } catch (err) {
     console.error(err);
     setError('Failed to add task');
@@ -127,7 +127,7 @@ const updateTask = async (id: string, taskInput: Partial<TaskType>) => {
       body: JSON.stringify(taskToSend),
     });
     if (!res.ok) throw new Error('Failed to update task');
-    await fetchTasks();
+    //await fetchTasks();
   } catch (err) {
     console.error(err);
     setError('Failed to update task');
