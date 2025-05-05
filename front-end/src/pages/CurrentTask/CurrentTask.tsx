@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Priority, TaskType } from "../../types/task.types";
 import { default as DatePicker } from "react-datepicker";
 import Task from "../../components/Task";
@@ -9,54 +9,66 @@ import "react-datepicker/dist/react-datepicker.css";
 import useTask from "../../hooks/useTask";
 import { v4 as uuidv4 } from 'uuid';
 
-
 const CurrentTask = () => {
 
   const {
     tasks,
     loading,
     addTask,
-    deleteTask,
     updateTask,
+    fetchTasks
   } = useTask();
 
-  
-  //State
-  const activeTasks = tasks.filter(task => !task.done);
-  const doneTasks = tasks.filter(task => task.done);
+  // State
+  const activeTasks = tasks.filter(task => !task.completed && !task.deleted);
+  const completeTasks = tasks.filter(task => task.completed && !task.deleted);
+
 
   console.log(activeTasks)
-  console.log(doneTasks)
+  console.log(completeTasks)
   //Add new task input
   const [priorityInput, setPriorityInput] = useState<Priority>(Priority.MEDIUM);
   const [dueTimeInput, setDueTimeInput] = useState<Date | null>(null);
   const [taskNameInput, setTaskNameInput] = useState<string>("");
   const [activeSortOption, setActiveSortOption] = useState<string>("TIME LEFT");
-  const [doneSortOption, setDoneSortOption] = useState<string>("TIME LEFT");
+  const [completeSortOption, setCompleteSortOption] = useState<string>("COMPLETE DATE");
+  
+  // useEffect(() => {
+  //   fetchTasks(); // Refresh tasks every time this page is entered
+  // }, []);
+  
+const handleClickMarkAsDone = async (id: string) => {
+  const task = tasks.find(task => task.id === id);
+  if (!task) return;
+
+  const updatedTask = {
+    ...task,
+    completed: !task.completed,
+    completeTime: new Date(), // Set to current time
+  };
+
+  await updateTask(id, updatedTask);
+};
+
   
 
-  const handleClickMarkAsDone = async (id: string) => {
-    console.log("mask as done 1")
-    const task = tasks.find(task => task.id === id);
-    if (!task) return;
-    console.log(task)
+const handleClickDelete = async (id: string) => {
+  const confirmed = window.confirm("Are you sure you want to delete this task?");
+  if (!confirmed) return;
 
-    const updatedTask = { 
-      ...task, 
-      done: !task.done, 
-    };
+  const task = tasks.find(task => task.id === id);
+  if (!task) return;
 
-    
-    await updateTask(id, updatedTask);
+  const updatedTask = {
+    ...task,
+    deleted: true,
+    deleteTime: new Date(), // Set delete time to now
   };
-  
 
-  const handleClickDelete = async (id: string) => {
-    const confirmed = window.confirm("Are you sure you want to delete this task?");
-    if (confirmed) {
-      await deleteTask(id);
-    }
-  };
+  await updateTask(id, updatedTask);
+
+};
+
   
   const handleConfirmToAddTask = async () => {
     if (!taskNameInput || !dueTimeInput) {
@@ -75,8 +87,13 @@ const CurrentTask = () => {
       label: taskNameInput,
       priority: priorityInput,
       dueTime: dueTimeInput,
-      done: false,
+      completed: false,
+      deleted: false,
+      completeTime: new Date('1000-01-01T00:00:00'),
+      deleteTime: new Date('1000-01-01T00:00:00')
     };
+    
+    
     
     console.log(newTask)
     await addTask(newTask);
@@ -116,6 +133,12 @@ const CurrentTask = () => {
         const bDate = new Date(`${b.dueTime}`);
         return aDate.getTime() - bDate.getTime(); // soonest first
       }
+
+      if (sortBy === "COMPLETE DATE") {
+        const aDate = new Date(`${a.completeTime}`);
+        const bDate = new Date(`${b.completeTime}`);
+        return bDate.getTime() - aDate.getTime(); // lastest first
+      }
   
       if (sortBy === "PRIORITY HIGH TO LOW") {
         return b.priority - a.priority; // higher enum = higher priority
@@ -129,7 +152,7 @@ const CurrentTask = () => {
     });
   };
   const sortedActiveTasks = sortTasks(activeTasks, activeSortOption);
-  const sortedDoneTasks = sortTasks(doneTasks, doneSortOption);
+  const sortedcompleteTasks = sortTasks(completeTasks, completeSortOption);
   console.log(tasks)
   return (
     <div>
@@ -238,7 +261,7 @@ const CurrentTask = () => {
         </section>
 
 
-        {/*Done Tasks List */}
+        {/*COMPLETE Tasks List */}
         <section className="flex flex-col items-center gap-12 light_border bg-light_main px-4 py-12 sm:px-12 brightness-95">
           {/* if loading */}
           {loading ? (
@@ -247,7 +270,7 @@ const CurrentTask = () => {
             </div>
           ) :
           // if have no task show icon
-          sortedDoneTasks.length === 0 ? (
+          sortedcompleteTasks.length === 0 ? (
             <div className="flex justify-center items-center py-12 text-center w-full">
               Hello World
             </div>
@@ -256,14 +279,14 @@ const CurrentTask = () => {
           (
             <>
               <header className="flex flex-col gap-4">
-                <h2 className="text-2xl text-center">DONE TASK</h2>
+                <h2 className="text-2xl text-center">COMPLETE TASK</h2>
                 <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
                   <span className="text-sm">SORT BY</span>
                   <DropdownInput
                     className="w-60"
-                    label="TIME LEFT"
-                    options={["TIME LEFT", "PRIORITY HIGH TO LOW", "PRIORITY LOW TO HIGH"]}
-                    onSelect={setDoneSortOption}
+                    label="COMPLETE DATE"
+                    options={["COMPLETE DATE", "PRIORITY HIGH TO LOW", "PRIORITY LOW TO HIGH"]}
+                    onSelect={setCompleteSortOption}
                   />
                 </div>
               </header>
@@ -272,7 +295,7 @@ const CurrentTask = () => {
                 {/* Header Row */}
                 <div className="hidden w-full h-fit items-center gap-2 bg-light_main px-2 sm:flex">
                   <div className="invisible h-10 w-10" />
-                  <div className="hidden h-fit w-50 items-center justify-center md:flex">TIME LEFT</div>
+                  <div className="hidden h-fit w-50 items-center justify-center md:flex">COMPLETE DATE</div>
                   <div className="flex flex-1 items-center justify-center px-5">TASK NAME</div>
                   <div className="hidden h-fit w-28 items-center justify-center lg:flex">PRIORITY</div>
                   <div className="hidden h-fit w-40 items-center justify-center xl:flex">DUE DATE</div>
@@ -281,7 +304,7 @@ const CurrentTask = () => {
                 </div>
 
                 {/* Tasks */}
-                {sortedDoneTasks.map(task => (
+                {sortedcompleteTasks.map(task => (
                   <Task
                     key={task.id}
                     {...task}

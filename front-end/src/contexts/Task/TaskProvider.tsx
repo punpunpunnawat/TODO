@@ -19,6 +19,8 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     return Priority.MEDIUM; // fallback default
   };
   
+  
+
   const fetchTasks = async () => {
     setLoading(true);
     try {
@@ -27,14 +29,17 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   
       const formatted = data.map((task: TaskType) => {
         const dueTime = task.dueTime ? new Date(task.dueTime) : null;
-  
+        const completeTime = task.completeTime ? new Date(task.completeTime) : null;
+        const deleteTime = task.deleteTime ? new Date(task.deleteTime) : null;
         return {
           ...task,
           dueTime: dueTime instanceof Date && !isNaN(dueTime.getTime()) ? dueTime : null,
+          completeTime: completeTime instanceof Date && !isNaN(completeTime.getTime()) ? completeTime : null,
+          deleteTime: deleteTime instanceof Date && !isNaN(deleteTime.getTime()) ? deleteTime : null,
           priority: normalizePriority(task.priority),
         };
       });
-  
+      
       setTasks(formatted);
       setError(null);
     } catch (err) {
@@ -49,6 +54,7 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   // Call fetchTasks only once on mount
   useEffect(() => {
     fetchTasks();
+    console.log(tasks)
   }, []); // empty dependency array ensures it runs only once on mount
 
   // Helper function to format dueTime and priority
@@ -57,8 +63,17 @@ const formatTaskFields = (taskInput: Partial<TaskType>) => {
 
   // Convert Date object to MySQL DATETIME format (YYYY-MM-DD HH:MM:SS)
   if (taskInput.dueTime instanceof Date) {
-    taskToSend.dueTime = formatDueTime(taskInput.dueTime);
+    taskToSend.dueTime = formatTime(taskInput.dueTime);
   }
+
+  if (taskInput.completeTime instanceof Date) {
+    taskToSend.completeTime = formatTime(taskInput.completeTime);
+  }
+
+  if (taskInput.deleteTime instanceof Date) {
+    taskToSend.deleteTime = formatTime(taskInput.deleteTime);
+  }
+  
 
   // Ensure priority is a string ('HIGH', etc.)
   if (typeof taskInput.priority === 'number') {
@@ -69,7 +84,7 @@ const formatTaskFields = (taskInput: Partial<TaskType>) => {
 };
 
 // Helper function to format Date as YYYY-MM-DD HH:MM:SS
-const formatDueTime = (date: Date) => {
+const formatTime = (date: Date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -85,7 +100,7 @@ const addTask = async (taskInput: TaskType) => {
   try {
     const taskToSend = formatTaskFields(taskInput); // Use the consolidated function
 
-    console.log("POST payload:", taskToSend); // ✅ Log the data you're sending
+    console.log("POST payload:", taskToSend); // Log the data you're sending
 
     const res = await fetch(API_URL, {
       method: 'POST',
@@ -103,12 +118,7 @@ const addTask = async (taskInput: TaskType) => {
 
 // Usage in updateTask
 const updateTask = async (id: string, taskInput: Partial<TaskType>) => {
-  console.log("mark as done 2");
-  console.log(taskInput);
-
   const taskToSend = formatTaskFields(taskInput); // Use the consolidated function
-
-  console.log(taskToSend);
 
   try {
     const res = await fetch(`${API_URL}/${id}`, {
@@ -149,6 +159,7 @@ const updateTask = async (id: string, taskInput: Partial<TaskType>) => {
         tasks,
         loading,
         error,
+        setTasks,
         fetchTasks,
         addTask,
         updateTask,

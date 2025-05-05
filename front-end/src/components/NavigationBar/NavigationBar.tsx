@@ -12,7 +12,7 @@ const NavigationBar: React.FC<MyComponentProps> = ({ username, loggedIn = false 
   const navigate = useNavigate();
   
   const handleClickCurrentTask = () => {
-    navigate('/');
+    navigate('/current-task');
   }
 
   const handleClickDeletedTask = () => {

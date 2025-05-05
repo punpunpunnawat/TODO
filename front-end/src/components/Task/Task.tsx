@@ -1,30 +1,26 @@
 import Button from "../Button";
 import MaskAsDoneIcon from '../../assets/icons/check-box-default.svg?react';
-import { Priority } from "../../types/task.types";
+import { Priority, TaskType } from "../../types/task.types";
 import { useState, useEffect } from "react";
 
-interface TaskProp {
-  id: string;
-  label: string;
-  priority: Priority;
-  dueTime: Date;
-  done: boolean;
+interface TaskProp extends TaskType {
   onClickMarkAsDone?: () => void;
   onClickDelete?: () => void;
 }
 
-const Task = ({ label, priority, dueTime, done, onClickMarkAsDone, onClickDelete }: TaskProp) => {
+const Task = ({ label, priority, dueTime, completeTime, deleteTime, completed, deleted, onClickMarkAsDone, onClickDelete}: TaskProp) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
-  // console.log('dueTime type:', typeof dueTime);
-  // console.log('dueTime value:', dueTime);
+
   // Update the timeLeft every minute
   useEffect(() => {
+    console.log(dueTime)
+    console.log(completeTime)
     // Function to calculate the time left
     const getTimeLeft = (): string => {
       const now = new Date();
       const diff = dueTime.getTime() - now.getTime();
 
-      if (done) return "DONE";
+      if (completed) return "DONE";
       if (diff <= 0) return "EXPIRED";
 
       const minutes = Math.floor(diff / (1000 * 60)) % 60;
@@ -49,7 +45,7 @@ const Task = ({ label, priority, dueTime, done, onClickMarkAsDone, onClickDelete
 
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
-  }, [dueTime, done]); // Re-run the effect when dueTime changes
+  }, [dueTime, completed, completeTime]); // Re-run the effect when dueTime changes
 
   const handleClickMarkAsDone = () => {
     onClickMarkAsDone?.();
@@ -60,19 +56,29 @@ const Task = ({ label, priority, dueTime, done, onClickMarkAsDone, onClickDelete
   };
 
   // Split date and time
-  const date = dueTime instanceof Date ? dueTime.toLocaleDateString() : "Invalid Date";
-  const time = dueTime instanceof Date
+  const formattedDueDate = dueTime instanceof Date ? dueTime.toLocaleDateString() : "Invalid Date";
+  const formattedDueTime = dueTime instanceof Date
     ? dueTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : "Invalid Time";
 
+    const formattedCompleteDate = completeTime instanceof Date ? completeTime.toLocaleDateString() : "Invalid Date";
+    const formattedCompleteTime = completeTime instanceof Date
+      ? completeTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : "Invalid Time";
+
+    const formattedDeleteDate = deleteTime instanceof Date ? deleteTime.toLocaleDateString() : "Invalid Date";
+    const formattedDeleteTime = deleteTime instanceof Date
+      ? deleteTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : "Invalid Time";
 
   return (
     <>
       {/* Desktop layout */}
       <div className="hidden sm:flex gap-2 p-2 bg-light_main light_border items-center ">
-        <MaskAsDoneIcon className="w-10 h-10" onClick={handleClickMarkAsDone} />
+        {!deleted && <MaskAsDoneIcon className="w-10 h-10" onClick={handleClickMarkAsDone} />}
+        
         <div className="hidden md:flex w-50 h-10 items-center justify-center light_border_disable">
-          {timeLeft}
+          {deleted ? formattedDeleteDate+" "+ formattedDeleteTime : completed ? formattedCompleteDate+" "+formattedCompleteTime : timeLeft}
         </div>
         <div className="flex-1 px-5 truncate overflow-hidden whitespace-nowrap">
           {label}
@@ -90,9 +96,9 @@ const Task = ({ label, priority, dueTime, done, onClickMarkAsDone, onClickDelete
           {Priority[priority]}
         </div>
 
-        <div className="hidden xl:flex w-40 h-10 items-center justify-center light_border_disable">{date}</div>
-        <div className="hidden xl:flex w-24 h-10 items-center justify-center light_border_disable">{time}</div>
-        <Button onClick={handleClickDelete}>DELETE</Button>
+        <div className="hidden xl:flex w-40 h-10 items-center justify-center light_border_disable">{formattedDueDate}</div>
+        <div className="hidden xl:flex w-24 h-10 items-center justify-center light_border_disable">{formattedDueTime}</div>
+        {!deleted ? <Button onClick={handleClickDelete}>DELETE</Button> : <Button onClick={handleClickDelete}>RECOVERY</Button>}
       </div>
 
       {/* Mobile layout */}
@@ -112,8 +118,8 @@ const Task = ({ label, priority, dueTime, done, onClickMarkAsDone, onClickDelete
           <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{label}</div>
         </div >
         <div className="flex gap-2">
-          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{date}</div>
-          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{time}</div>
+          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{formattedDueDate}</div>
+          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{formattedDueTime}</div>
         </div>
         <div className="flex gap-2">
           <Button onClick={handleClickDelete} className="flex-1">DELETE</Button>

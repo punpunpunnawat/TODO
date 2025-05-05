@@ -4,7 +4,7 @@ interface DropdownProps {
   label: string;
   options: string[];
   onSelect?: (value: string) => void;
-  className?: string; // Add className prop
+  className?: string;
 }
 
 const DropdownInput: React.FC<DropdownProps> = ({ label, options, onSelect, className }) => {
@@ -18,10 +18,10 @@ const DropdownInput: React.FC<DropdownProps> = ({ label, options, onSelect, clas
   };
 
   return (
-    <div className={`relative ${className}`}> {/* Apply className prop to parent */}
+    <div className={`relative ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-10 bg-light_main text-light_text_primary light_border border-gray-300 px-4 py-2 text-left rounded-lg transition-all duration-300 ease-in-out hover:rounded-xl"
+        className="w-full h-10 px-4 bg-light_main text-light_text_primary light_border border-gray-300 rounded-lg transition-all duration-300 ease-in-out hover:rounded-xl flex items-center justify-center text-center"
       >
         {selected || label}
       </button>
@@ -32,7 +32,7 @@ const DropdownInput: React.FC<DropdownProps> = ({ label, options, onSelect, clas
             <button
               key={option}
               onClick={() => handleSelect(option)}
-              className="w-full px-4 py-2 text-left hover:bg-gray-100 rounded-lg transition-all duration-300 ease-in-out"
+              className="w-full px-4 py-2 hover:bg-gray-100 transition-all duration-300 ease-in-out flex justify-center items-center text-center"
             >
               {option}
             </button>

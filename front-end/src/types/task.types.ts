@@ -4,18 +4,23 @@ export enum Priority {
   LOW = 1,
 }
 
-export type TaskType = {
+export interface TaskType {
   id: string;
   label: string;
   priority: Priority;
   dueTime: Date;
-  done: boolean;
+  completed: boolean;
+  deleted: boolean;
+  completeTime: Date;
+  deleteTime: Date;
 }
+
 
 export interface TaskContextType {
   tasks: TaskType[];
   loading: boolean;
   error: string | null;
+  setTasks: React.Dispatch<React.SetStateAction<TaskType[]>>;
   fetchTasks: () => Promise<void>;
   addTask: (taskInput: TaskType) => Promise<void>;
   updateTask: (id: string, taskInput: Partial<TaskType>) => Promise<void>;

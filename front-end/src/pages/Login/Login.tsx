@@ -39,7 +39,7 @@ const Login = () => {
     
     <div className="h-screen flex flex-col">
         <NavigationBar username=""/>
-       <main className="w-full h-full flex px-6 sm:px-12 py-6 ">
+       <main className="flex flex-1 px-6 sm:px-12 py-6 ">
             <section className="hidden lg:flex flex-1 flex-col items-center justify-center">
                 <div className="flex items-end">
                     <h1 className="text-[64px]">
