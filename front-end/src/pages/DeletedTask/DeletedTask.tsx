@@ -53,13 +53,13 @@ const CurrentTask = () => {
   
     const task = tasks.find(task => task.id === id);
     if (!task) return;
-  
+    
     const updatedTask = {
       ...task,
       deleted: false,
       deleteTime: new Date('1000-01-01T00:00:00'), // Set delete time to now
     };
-  
+    
     await updateTask(id, updatedTask);
     setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
   }

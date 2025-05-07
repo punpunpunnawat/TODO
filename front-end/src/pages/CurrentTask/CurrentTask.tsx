@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Priority, TaskType } from "../../types/task.types";
 import { default as DatePicker } from "react-datepicker";
 import Task from "../../components/Task";
@@ -16,7 +16,8 @@ const CurrentTask = () => {
     loading,
     addTask,
     updateTask,
-    setTasks
+    setTasks,
+    fetchTasks
   } = useTask();
 
   //Define tasks
@@ -30,6 +31,10 @@ const CurrentTask = () => {
   const [activeSortOption, setActiveSortOption] = useState<string>("TIME LEFT");
   const [completeSortOption, setCompleteSortOption] = useState<string>("COMPLETE DATE");
   
+  useEffect(() => {
+    fetchTasks();
+  },[]);
+
   const handleClickMarkAsDone = async (id: string) => {
     const task = tasks.find(task => task.id === id);
     if (!task) return;
