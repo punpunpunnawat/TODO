@@ -8,17 +8,18 @@ interface TaskProp extends TaskType {
   onClickDelete?: () => void;
 }
 
-const Task = ({ label, priority, dueTime, completeTime, deleteTime, completed, deleted, onClickMarkAsDone, onClickDelete}: TaskProp) => {
+const Task = ({ label, priority, dueDate, completedDate, deletedDate, completed, deleted, onClickMarkAsDone, onClickDelete}: TaskProp) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
 
   // Update the timeLeft every minute
   useEffect(() => {
-    console.log(dueTime)
-    console.log(completeTime)
+    console.log(dueDate)
+    console.log(label)
+    
     // Function to calculate the time left
     const getTimeLeft = (): string => {
       const now = new Date();
-      const diff = dueTime.getTime() - now.getTime();
+      const diff = dueDate.getTime() - now.getTime();
 
       if (completed) return "DONE";
       if (diff <= 0) return "EXPIRED";
@@ -45,7 +46,7 @@ const Task = ({ label, priority, dueTime, completeTime, deleteTime, completed, d
 
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
-  }, [dueTime, completed, completeTime]); // Re-run the effect when dueTime changes
+  }, [dueDate, completed, completedDate]); // Re-run the effect when dueDate changes
 
   const handleClickMarkAsDone = () => {
     onClickMarkAsDone?.();
@@ -56,19 +57,19 @@ const Task = ({ label, priority, dueTime, completeTime, deleteTime, completed, d
   };
 
   // Split date and time
-  const formattedDueDate = dueTime instanceof Date ? dueTime.toLocaleDateString() : "Invalid Date";
-  const formattedDueTime = dueTime instanceof Date
-    ? dueTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const dueDate_date = dueDate instanceof Date ? dueDate.toLocaleDateString() : "Invalid Date";
+  const dueDate_time = dueDate instanceof Date
+    ? dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : "Invalid Time";
 
-    const formattedCompleteDate = completeTime instanceof Date ? completeTime.toLocaleDateString() : "Invalid Date";
-    const formattedCompleteTime = completeTime instanceof Date
-      ? completeTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    const completedDate_date = completedDate instanceof Date ? completedDate.toLocaleDateString() : "Invalid Date";
+    const completedDate_time = completedDate instanceof Date
+      ? completedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       : "Invalid Time";
 
-    const formattedDeleteDate = deleteTime instanceof Date ? deleteTime.toLocaleDateString() : "Invalid Date";
-    const formattedDeleteTime = deleteTime instanceof Date
-      ? deleteTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    const deleteDate_date = deletedDate instanceof Date ? deletedDate.toLocaleDateString() : "Invalid Date";
+    const deleteDate_time = deletedDate instanceof Date
+      ? deletedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       : "Invalid Time";
 
   return (
@@ -78,7 +79,7 @@ const Task = ({ label, priority, dueTime, completeTime, deleteTime, completed, d
         {!deleted && <MaskAsDoneIcon className="w-10 h-10" onClick={handleClickMarkAsDone} />}
         
         <div className="hidden md:flex w-50 h-10 items-center justify-center light_border_disable">
-          {deleted ? formattedDeleteDate+" "+ formattedDeleteTime : completed ? formattedCompleteDate+" "+formattedCompleteTime : timeLeft}
+          {deleted ? deleteDate_date+" "+ deleteDate_time : completed ? completedDate_date+" "+completedDate_time : timeLeft}
         </div>
         <div className="flex-1 px-5 truncate overflow-hidden whitespace-nowrap">
           {label}
@@ -96,8 +97,8 @@ const Task = ({ label, priority, dueTime, completeTime, deleteTime, completed, d
           {Priority[priority]}
         </div>
 
-        <div className="hidden xl:flex w-40 h-10 items-center justify-center light_border_disable">{formattedDueDate}</div>
-        <div className="hidden xl:flex w-24 h-10 items-center justify-center light_border_disable">{formattedDueTime}</div>
+        <div className="hidden xl:flex w-40 h-10 items-center justify-center light_border_disable">{dueDate_date}</div>
+        <div className="hidden xl:flex w-24 h-10 items-center justify-center light_border_disable">{dueDate_time}</div>
         {!deleted ? <Button onClick={handleClickDelete}>DELETE</Button> : <Button onClick={handleClickDelete}>RECOVERY</Button>}
       </div>
 
@@ -118,8 +119,8 @@ const Task = ({ label, priority, dueTime, completeTime, deleteTime, completed, d
           <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{label}</div>
         </div >
         <div className="flex gap-2">
-          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{formattedDueDate}</div>
-          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{formattedDueTime}</div>
+          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{completedDate_date}</div>
+          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{completedDate_time}</div>
         </div>
         <div className="flex gap-2">
           <Button onClick={handleClickDelete} className="flex-1">DELETE</Button>

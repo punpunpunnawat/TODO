@@ -27,8 +27,8 @@ const CurrentTask = () => {
         console.log(tasks)
   
         if (sortBy === "DELETE DATE") {
-          const aDate = new Date(`${a.deleteTime}`);
-          const bDate = new Date(`${b.deleteTime}`);
+          const aDate = new Date(`${a.deletedDate}`);
+          const bDate = new Date(`${b.deletedDate}`);
           return bDate.getTime() - aDate.getTime(); // soonest first
         }
     

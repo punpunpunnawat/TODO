@@ -10,16 +10,18 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [userID, setUserID] = useState<string>("")
 
-  const API_URL = 'http://localhost:8080/tasks';
+  // const API_URL = `http://localhost:8080/tasks?user_id=${encodeURIComponent(userID)}`;
+    const API_URL = `http://localhost:8080/tasks?user_id=test-user-id-001`;
 
+console.log(API_URL)
+console.log(tasks)
   const normalizePriority = (p: Priority): Priority => {
     if (typeof p === "number") return p;
     if (typeof p === "string") return Priority[p as keyof typeof Priority];
     return Priority.MEDIUM; // fallback default
   };
-  
-  
 
   const fetchTasks = async () => {
     setLoading(true);
@@ -28,14 +30,14 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
       const data = await res.json();
   
       const formatted = data.map((task: TaskType) => {
-        const dueTime = task.dueTime ? new Date(task.dueTime) : null;
-        const completeTime = task.completeTime ? new Date(task.completeTime) : null;
-        const deleteTime = task.deleteTime ? new Date(task.deleteTime) : null;
+        const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+        const completedDate = task.completedDate ? new Date(task.completedDate) : null;
+        const deletedDate = task.deletedDate ? new Date(task.deletedDate) : null;
         return {
           ...task,
-          dueTime: dueTime instanceof Date && !isNaN(dueTime.getTime()) ? dueTime : null,
-          completeTime: completeTime instanceof Date && !isNaN(completeTime.getTime()) ? completeTime : null,
-          deleteTime: deleteTime instanceof Date && !isNaN(deleteTime.getTime()) ? deleteTime : null,
+          dueDate: dueDate instanceof Date && !isNaN(dueDate.getTime()) ? dueDate : null,
+          completedDate: completedDate instanceof Date && !isNaN(completedDate.getTime()) ? completedDate : null,
+          deletedDate: deletedDate instanceof Date && !isNaN(deletedDate.getTime()) ? deletedDate : null,
           priority: normalizePriority(task.priority),
         };
       });
@@ -50,6 +52,7 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     }
   };
   
+  console.log(tasks)
 
   // Call fetchTasks only once on mount
   useEffect(() => {
@@ -57,21 +60,21 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     console.log(tasks)
   }, []); // empty dependency array ensures it runs only once on mount
 
-  // Helper function to format dueTime and priority
+  // Helper function to format dueDate and priority
 const formatTaskFields = (taskInput: Partial<TaskType>) => {
   const taskToSend: Record<string, unknown> = { ...taskInput };
 
   // Convert Date object to MySQL DATETIME format (YYYY-MM-DD HH:MM:SS)
-  if (taskInput.dueTime instanceof Date) {
-    taskToSend.dueTime = formatTime(taskInput.dueTime);
+  if (taskInput.dueDate instanceof Date) {
+    taskToSend.dueDate = formatTime(taskInput.dueDate);
   }
 
-  if (taskInput.completeTime instanceof Date) {
-    taskToSend.completeTime = formatTime(taskInput.completeTime);
+  if (taskInput.completedDate instanceof Date) {
+    taskToSend.completedDate = formatTime(taskInput.completedDate);
   }
 
-  if (taskInput.deleteTime instanceof Date) {
-    taskToSend.deleteTime = formatTime(taskInput.deleteTime);
+  if (taskInput.deletedDate instanceof Date) {
+    taskToSend.deletedDate = formatTime(taskInput.deletedDate);
   }
   
 
@@ -157,6 +160,7 @@ const updateTask = async (id: string, taskInput: Partial<TaskType>) => {
     <TaskContext.Provider
       value={{
         tasks,
+        userID,
         loading,
         error,
         setTasks,
@@ -164,6 +168,7 @@ const updateTask = async (id: string, taskInput: Partial<TaskType>) => {
         addTask,
         updateTask,
         deleteTask,
+        setUserID
       }}
     >
       {children}

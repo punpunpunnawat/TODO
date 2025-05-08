@@ -26,7 +26,7 @@ const CurrentTask = () => {
 
   //Add new task input
   const [priorityInput, setPriorityInput] = useState<Priority>(Priority.MEDIUM);
-  const [dueTimeInput, setDueTimeInput] = useState<Date | null>(null);
+  const [dueDateInput, setDueDateInput] = useState<Date | null>(null);
   const [taskNameInput, setTaskNameInput] = useState<string>("");
   const [activeSortOption, setActiveSortOption] = useState<string>("TIME LEFT");
   const [completeSortOption, setCompleteSortOption] = useState<string>("COMPLETE DATE");
@@ -42,7 +42,7 @@ const CurrentTask = () => {
     const updatedTask = {
       ...task,
       completed: !task.completed,
-      completeTime: new Date(), // Set to current time when marked as done
+      completedDate: new Date(), // Set to current time when marked as done
     };
   
     // Update the task in the database
@@ -65,7 +65,7 @@ const CurrentTask = () => {
     const updatedTask = {
       ...task,
       deleted: true,
-      deleteTime: new Date(),
+      deletedDate: new Date(),
     };
 
     // Update the task in the database
@@ -75,16 +75,14 @@ const CurrentTask = () => {
     setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
   };
 
-
-  
   const handleConfirmToAddTask = async () => {
-    if (!taskNameInput || !dueTimeInput) {
+    if (!taskNameInput || !dueDateInput) {
       alert("Please enter a task name and select a due date/time.");
       return;
     }
   
     const now = new Date();
-    if (dueTimeInput.getTime() < now.getTime()) {
+    if (dueDateInput.getTime() < now.getTime()) {
       alert("The due date/time cannot be in the past.");
       return;
     }
@@ -93,11 +91,11 @@ const CurrentTask = () => {
       id: uuidv4(),
       label: taskNameInput,
       priority: priorityInput,
-      dueTime: dueTimeInput,
+      dueDate: dueDateInput,
       completed: false,
       deleted: false,
-      completeTime: new Date('1000-01-01T00:00:00'),
-      deleteTime: new Date('1000-01-01T00:00:00')
+      completedDate: new Date('1000-01-01T00:00:00'),
+      deletedDate: new Date('1000-01-01T00:00:00')
     };
   
     // Add new task to the database
@@ -108,7 +106,7 @@ const CurrentTask = () => {
   
     // Clear input fields
     setTaskNameInput("");
-    setDueTimeInput(null);
+    setDueDateInput(null);
     setPriorityInput(Priority.MEDIUM);
   };
   
@@ -136,14 +134,14 @@ const CurrentTask = () => {
     return [...tasks].sort((a, b) => {
       console.log(tasks)
       if (sortBy === "TIME LEFT") {
-        const aDate = new Date(`${a.dueTime}`);
-        const bDate = new Date(`${b.dueTime}`);
+        const aDate = new Date(`${a.dueDate}`);
+        const bDate = new Date(`${b.dueDate}`);
         return aDate.getTime() - bDate.getTime(); // soonest first
       }
 
       if (sortBy === "COMPLETE DATE") {
-        const aDate = new Date(`${a.completeTime}`);
-        const bDate = new Date(`${b.completeTime}`);
+        const aDate = new Date(`${a.completedDate}`);
+        const bDate = new Date(`${b.completedDate}`);
         return bDate.getTime() - aDate.getTime(); // lastest first
       }
   
@@ -183,8 +181,8 @@ const CurrentTask = () => {
                 />
                 <div>
                   <DatePicker
-                    selected={dueTimeInput}
-                    onChange={(date: Date | null) => setDueTimeInput(date)}
+                    selected={dueDateInput}
+                    onChange={(date: Date | null) => setDueDateInput(date)}
                     dateFormat="yyyy-MM-dd HH:mm"
                     showTimeSelect
                     timeFormat="HH:mm"
@@ -256,14 +254,21 @@ const CurrentTask = () => {
                 </div>
 
                 {/* Tasks */}
-                {sortedActiveTasks.map(task => (
+                {sortedActiveTasks.map(task => {
+
+                console.log("Rendering Task:", task);
+                console.log("Date is:", task.dueDate);
+
+                return (
                   <Task
                     key={task.id}
                     {...task}
                     onClickMarkAsDone={() => handleClickMarkAsDone(task.id)}
                     onClickDelete={() => handleClickDelete(task.id)}
                   />
-                ))}
+                );
+              })}
+
               </div>
             </>
           )}
