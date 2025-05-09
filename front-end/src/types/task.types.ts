@@ -13,12 +13,12 @@ export interface TaskType {
   deleted: boolean;
   completedDate: Date;
   deletedDate: Date;
+  createDate: Date;
 }
 
 
 export interface TaskContextType {
   tasks: TaskType[];
-  userID: string;
   loading: boolean;
   error: string | null;
   setTasks: React.Dispatch<React.SetStateAction<TaskType[]>>;
@@ -26,5 +26,12 @@ export interface TaskContextType {
   addTask: (taskInput: TaskType) => Promise<void>;
   updateTask: (id: string, taskInput: Partial<TaskType>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
-  setUserID: React.Dispatch<React.SetStateAction<string>>;
 }
+
+export interface GlobalContextType {
+  userID: string;
+  darkModeActive: boolean;
+  setUserID: React.Dispatch<React.SetStateAction<string>>;
+  setDarkModeActive: (value: boolean) => void;
+}
+

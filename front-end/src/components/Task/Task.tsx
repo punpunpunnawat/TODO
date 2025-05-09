@@ -48,7 +48,7 @@ const Task = ({ label, priority, dueDate, completedDate, deletedDate, completed,
 
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
-  }, [dueDate, completed, completedDate]); // Re-run the effect when dueDate changes
+  }, [dueDate, completed, completedDate, label]); // Re-run the effect when dueDate changes
 
   const handleClickMarkAsDone = () => {
     onClickMarkAsDone?.();

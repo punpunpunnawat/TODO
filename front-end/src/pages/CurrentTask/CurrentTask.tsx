@@ -8,6 +8,7 @@ import DropdownInput from "../../components/Dropdown";
 import "react-datepicker/dist/react-datepicker.css";
 import useTask from "../../hooks/useTask";
 import { v4 as uuidv4 } from 'uuid';
+import useGlobal from "../../hooks/useGlobal";
 
 const CurrentTask = () => {
 
@@ -16,9 +17,12 @@ const CurrentTask = () => {
     loading,
     addTask,
     updateTask,
-    setTasks,
     fetchTasks
   } = useTask();
+
+  const  {
+    userID
+  } = useGlobal();
 
   //Define tasks
   const activeTasks = tasks.filter(task => !task.completed && !task.deleted);
@@ -46,10 +50,7 @@ const CurrentTask = () => {
     };
   
     try {
-      // Only update local state if backend update is successful
       await updateTask(id, updatedTask);
-  
-      
     } catch (error) {
       console.error('Failed to update task:', error);
     }
@@ -70,11 +71,11 @@ const CurrentTask = () => {
       deletedDate: new Date(),
     };
 
-    // Update the task in the database
-    await updateTask(id, updatedTask);
-
-    // Remove the task from the local state without re-fetching
-    setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
+    try {
+      await updateTask(id, updatedTask);
+    } catch (error) {
+      console.error('Failed to update task:', error);
+    }
   };
 
   const handleConfirmToAddTask = async () => {
@@ -91,21 +92,23 @@ const CurrentTask = () => {
   
     const newTask = {
       id: uuidv4(),
+      userID: userID,
       label: taskNameInput,
       priority: priorityInput,
       dueDate: dueDateInput,
       completed: false,
       deleted: false,
       completedDate: new Date('1000-01-01T00:00:00'),
-      deletedDate: new Date('1000-01-01T00:00:00')
+      deletedDate: new Date('1000-01-01T00:00:00'),
+      createDate: new Date()
     };
   
-    // Add new task to the database
-    await addTask(newTask);
-  
-    // Add the new task directly to local state without re-fetching
-    setTasks(prevTasks => [...prevTasks, newTask]);
-  
+    try {
+      await addTask(newTask);
+    } catch (error) {
+      console.error('Failed to update task:', error);
+    }
+
     // Clear input fields
     setTaskNameInput("");
     setDueDateInput(null);
@@ -165,7 +168,7 @@ const CurrentTask = () => {
   console.log(tasks)
   return (
     <div>
-      <NavigationBar username="punpunpunnawat" loggedIn />
+      <NavigationBar username={userID} loggedIn />
 
       <main className="flex flex-col gap-6 p-6 sm:px-12">
         

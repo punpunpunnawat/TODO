@@ -29,7 +29,7 @@ type Task struct {
     CompletedDate  string `json:"completedDate"`
     Deleted        bool   `json:"deleted"`
     DeletedDate    string `json:"deletedDate"`
-    CreatedAt      string `json:"createdAt"`
+    CreatedDate      string `json:"createdDate"`
 }
 
 func tasksHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
@@ -43,7 +43,7 @@ func tasksHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
             return
         }
 
-        rows, err := db.Query(`SELECT id, user_id, label, priority, due_date, completed, completed_date, deleted, deleted_date, created_at FROM tasks WHERE user_id = ?`, userID)
+        rows, err := db.Query(`SELECT id, user_id, label, priority, due_date, completed, completed_date, deleted, deleted_date, created_date FROM tasks WHERE user_id = ?`, userID)
         if err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)
             return
@@ -53,8 +53,8 @@ func tasksHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
         var tasks []Task
         for rows.Next() {
             var t Task
-            var dueDate, completedDate, deletedDate, createdAt sql.NullString
-            err := rows.Scan(&t.ID, &t.UserID, &t.Label, &t.Priority, &dueDate, &t.Completed, &completedDate, &t.Deleted, &deletedDate, &createdAt)
+            var dueDate, completedDate, deletedDate, createdDate sql.NullString
+            err := rows.Scan(&t.ID, &t.UserID, &t.Label, &t.Priority, &dueDate, &t.Completed, &completedDate, &t.Deleted, &deletedDate, &createdDate)
             if err != nil {
                 http.Error(w, err.Error(), http.StatusInternalServerError)
                 return
@@ -63,7 +63,7 @@ func tasksHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
             t.DueDate = dueDate.String
             t.CompletedDate = completedDate.String
             t.DeletedDate = deletedDate.String
-            t.CreatedAt = createdAt.String
+            t.CreatedDate = createdDate.String
             tasks = append(tasks, t)
         }
 
@@ -77,12 +77,12 @@ func tasksHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
         }
 
         t.ID = uuid.New().String()
-        t.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
+        t.CreatedDate = time.Now().Format("2006-01-02 15:04:05")
 
         _, err := db.Exec(`
-            INSERT INTO tasks (id, user_id, label, priority, due_date, completed, completed_date, deleted, deleted_date, created_at)
+            INSERT INTO tasks (id, user_id, label, priority, due_date, completed, completed_date, deleted, deleted_date, created_date)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            t.ID, t.UserID, t.Label, t.Priority, t.DueDate, t.Completed, t.CompletedDate, t.Deleted, t.DeletedDate, t.CreatedAt)
+            t.ID, t.UserID, t.Label, t.Priority, t.DueDate, t.Completed, t.CompletedDate, t.Deleted, t.DeletedDate, t.CreatedDate)
         if err != nil {
             log.Printf("Failed to insert task: %v", err)
             http.Error(w, err.Error(), http.StatusInternalServerError)

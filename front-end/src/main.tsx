@@ -8,11 +8,14 @@ import { Providers } from './contexts';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
-    <Providers.TaskProvider>
-      <StrictMode>
-        <App />
-      </StrictMode>
-    </Providers.TaskProvider>
+    <Providers.GlobalProvider>
+      <Providers.TaskProvider>
+        <StrictMode>
+          <App />
+        </StrictMode>
+      </Providers.TaskProvider>
+    </Providers.GlobalProvider>
+    
   </BrowserRouter>
   
 )

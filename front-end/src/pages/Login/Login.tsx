@@ -2,12 +2,10 @@ import { useState } from "react";
 import NavigationBar from "../../components/NavigationBar";
 import Button from "../../components/Button";
 import { useNavigate } from "react-router-dom";
-import useTask from "../../hooks/useTask";
+import useGlobal from "../../hooks/useGlobal";
 
 const Login = () => {
-    const {
-        setUserID
-      } = useTask();
+    const {setUserID} = useGlobal();
     const navigate = useNavigate();
     const [loginEmailInput, setLoginEmailInput] = useState<string>("");
     const [loginPasswordInput, setLoginPasswordInput] = useState<string>("");
@@ -63,6 +61,7 @@ const Login = () => {
                 const user = await response.json();
                 console.log("Login successful:", user);
                 setUserID(user.user_id)
+                localStorage.setItem('userID', user.user_id);
                 navigate("/current-task"); // Navigate to the next page (e.g., dashboard or tasks)
             } else {
                 // If login failed, display an error message

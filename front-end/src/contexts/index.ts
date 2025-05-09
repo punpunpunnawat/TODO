@@ -1,6 +1,7 @@
-// /contexts/index.ts
-import { TaskProvider } from './Task'; // this will automatically resolve to index.ts in /Task
+import { GlobalProvider } from './Global';
+import { TaskProvider } from './Task';
 
 export const Providers = {
-  TaskProvider,
+  GlobalProvider,
+  TaskProvider
 };
