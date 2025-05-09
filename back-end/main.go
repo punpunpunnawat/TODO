@@ -17,6 +17,7 @@ func main() {
         tasksHandler(w, r, db)
     })
     http.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
+        fmt.Println("uwu called")
         taskByIDHandler(w, r, db)
     })
     http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {

@@ -61,7 +61,7 @@ console.log(tasks)
   }, []); // empty dependency array ensures it runs only once on mount
 
   // Helper function to format dueDate and priority
-const formatTaskFields = (taskInput: Partial<TaskType>) => {
+const formatDateToString = (taskInput: Partial<TaskType>) => {
   const taskToSend: Record<string, unknown> = { ...taskInput };
 
   // Convert Date object to MySQL DATETIME format (YYYY-MM-DD HH:MM:SS)
@@ -101,7 +101,7 @@ const formatTime = (date: Date) => {
 // Usage in addTask
 const addTask = async (taskInput: TaskType) => {
   try {
-    const taskToSend = formatTaskFields(taskInput); // Use the consolidated function
+    const taskToSend = formatDateToString(taskInput); // Use the consolidated function
 
     console.log("POST payload:", taskToSend); // Log the data you're sending
 
@@ -119,23 +119,33 @@ const addTask = async (taskInput: TaskType) => {
   }
 };
 
-// Usage in updateTask
 const updateTask = async (id: string, taskInput: Partial<TaskType>) => {
-  const taskToSend = formatTaskFields(taskInput); // Use the consolidated function
-
+  const taskToSend = formatDateToString(taskInput); // Format task fields for backend
+  console.log(id)
   try {
-    const res = await fetch(`${API_URL}/${id}`, {
+    const res = await fetch(`http://localhost:8080/tasks/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(taskToSend),
     });
+
+    console.log(`http://localhost:8080/tasks/${id}`)
     if (!res.ok) throw new Error('Failed to update task');
-    //await fetchTasks();
+
+    console.log(":)")
+    // Update local state inside the provider
+    setTasks(prevTasks =>
+      prevTasks.map(task => (task.id === id ? { ...task, ...taskInput } : task))
+    );
+
+    setError(null); // Reset any previous errors
+
   } catch (err) {
     console.error(err);
     setError('Failed to update task');
   }
 };
+
 
   
 

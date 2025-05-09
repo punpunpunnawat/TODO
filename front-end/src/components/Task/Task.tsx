@@ -19,6 +19,8 @@ const Task = ({ label, priority, dueDate, completedDate, deletedDate, completed,
     // Function to calculate the time left
     const getTimeLeft = (): string => {
       const now = new Date();
+
+      console.log(dueDate)
       const diff = dueDate.getTime() - now.getTime();
 
       if (completed) return "DONE";

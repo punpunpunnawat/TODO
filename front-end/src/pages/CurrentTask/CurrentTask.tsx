@@ -42,17 +42,19 @@ const CurrentTask = () => {
     const updatedTask = {
       ...task,
       completed: !task.completed,
-      completedDate: new Date(), // Set to current time when marked as done
+      completedDate: new Date(),
     };
   
-    // Update the task in the database
-    await updateTask(id, updatedTask);
+    try {
+      // Only update local state if backend update is successful
+      await updateTask(id, updatedTask);
   
-    // Update the local state to reflect the completion status without re-fetching
-    setTasks(prevTasks =>
-      prevTasks.map(task => (task.id === id ? updatedTask : task))
-    );
+      
+    } catch (error) {
+      console.error('Failed to update task:', error);
+    }
   };
+  
   
   const handleClickDelete = async (id: string) => {
     const confirmed = window.confirm("Are you sure you want to delete this task?");

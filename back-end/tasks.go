@@ -7,15 +7,23 @@ import (
     "net/http"
     "strings"
     "time"
-
+    "fmt"
     "github.com/google/uuid"
+    "io"
+)
+type Priority string
+
+const (
+    Low    Priority = "LOW"
+    Medium Priority = "MEDIUM"
+    High   Priority = "HIGH"
 )
 
 type Task struct {
     ID             string `json:"id"`
     UserID         string `json:"userID"`
     Label          string `json:"label"`
-    Priority       int    `json:"priority"`
+    Priority       string `json:"priority"` 
     DueDate        string `json:"dueDate"`
     Completed      bool   `json:"completed"`
     CompletedDate  string `json:"completedDate"`
@@ -89,6 +97,7 @@ func tasksHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func taskByIDHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+    
     w.Header().Set("Content-Type", "application/json")
     id := strings.TrimPrefix(r.URL.Path, "/tasks/")
     if id == "" {
@@ -98,25 +107,71 @@ func taskByIDHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
     switch r.Method {
     case http.MethodPut:
+        contentType := r.Header.Get("Content-Type")
+        fmt.Println("Content-Type:", contentType)
+    
+        if contentType != "application/json" {
+            fmt.Println("❌ Invalid Content-Type. Expected application/json")
+            http.Error(w, "Invalid Content-Type, expected application/json", http.StatusBadRequest)
+            return
+        }
+    
+        // Read the body content
+        body, err := io.ReadAll(r.Body)
+        if err != nil {
+            fmt.Println("❌ Error reading request body:", err)
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+    
+        // Decode the JSON
         var t Task
-        if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+        if err := json.Unmarshal(body, &t); err != nil {
+            fmt.Println("Error decoding JSON:", err)
             http.Error(w, err.Error(), http.StatusBadRequest)
             return
         }
-
-        _, err := db.Exec(`
+    
+        // Log the received task data
+        fmt.Println("Received task data:", t)
+    
+        // Convert empty string date fields to NULL
+        var dueDate, completedDate, deletedDate sql.NullString
+    
+        if t.DueDate == "" {
+            dueDate = sql.NullString{Valid: false}
+        } else {
+            dueDate = sql.NullString{String: t.DueDate, Valid: true}
+        }
+    
+        if t.CompletedDate == "" {
+            completedDate = sql.NullString{Valid: false}
+        } else {
+            completedDate = sql.NullString{String: t.CompletedDate, Valid: true}
+        }
+    
+        if t.DeletedDate == "" {
+            deletedDate = sql.NullString{Valid: false}
+        } else {
+            deletedDate = sql.NullString{String: t.DeletedDate, Valid: true}
+        }
+    
+        // Process the task update in the database
+        _, err = db.Exec(`
             UPDATE tasks 
             SET label=?, priority=?, due_date=?, completed=?, completed_date=?, deleted=?, deleted_date=?
             WHERE id=?`,
-            t.Label, t.Priority, t.DueDate, t.Completed, t.CompletedDate, t.Deleted, t.DeletedDate, id)
+            t.Label, t.Priority, dueDate, t.Completed, completedDate, t.Deleted, deletedDate, id)
         if err != nil {
-            // http.Error(w, err.Error(), http.StatusInternalServerError)
+            fmt.Println(err)
+            http.Error(w, err.Error(), http.StatusInternalServerError)
             return
         }
-
+    
+        // Respond back with the task data
         t.ID = id
         json.NewEncoder(w).Encode(t)
-
+    
     case http.MethodDelete:
         _, err := db.Exec("DELETE FROM tasks WHERE id=?", id)
         if err != nil {
@@ -126,6 +181,6 @@ func taskByIDHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
         w.WriteHeader(http.StatusNoContent)
 
     default:
-        http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+        http.Error(w, ":(", http.StatusMethodNotAllowed)
     }
 }
