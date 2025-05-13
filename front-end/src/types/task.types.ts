@@ -30,8 +30,11 @@ export interface TaskContextType {
 
 export interface GlobalContextType {
   userID: string;
+  userEmail: string;
   darkModeActive: boolean;
+  loggedIn: boolean;
   setUserID: React.Dispatch<React.SetStateAction<string>>;
+  setUserEmail: React.Dispatch<React.SetStateAction<string>>;
   setDarkModeActive: (value: boolean) => void;
 }
 

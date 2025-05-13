@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import useTask from "../../hooks/useTask";
 import { v4 as uuidv4 } from 'uuid';
 import useGlobal from "../../hooks/useGlobal";
+import { useNavigate } from "react-router-dom";
 
 const CurrentTask = () => {
 
@@ -21,23 +22,34 @@ const CurrentTask = () => {
   } = useTask();
 
   const  {
-    userID
+    userID,
+    loggedIn
   } = useGlobal();
+  
+  const navigate = useNavigate();
 
   //Define tasks
   const activeTasks = tasks.filter(task => !task.completed && !task.deleted);
   const completeTasks = tasks.filter(task => task.completed && !task.deleted);
 
   //Add new task input
-  const [priorityInput, setPriorityInput] = useState<Priority>(Priority.MEDIUM);
+  const [priorityInput, setPriorityInput] = useState<Priority | null>(null);
   const [dueDateInput, setDueDateInput] = useState<Date | null>(null);
   const [taskNameInput, setTaskNameInput] = useState<string>("");
   const [activeSortOption, setActiveSortOption] = useState<string>("TIME LEFT");
   const [completeSortOption, setCompleteSortOption] = useState<string>("COMPLETE DATE");
   
   useEffect(() => {
-    fetchTasks();
-  },[]);
+    console.log("login a yang"+loggedIn)
+    if (loggedIn === false) {
+      navigate("/login");
+      console.log("go back!!!!")
+      return;
+    }
+    if (loggedIn === true) {
+      fetchTasks();
+    }
+  }, [loggedIn]);
 
   const handleClickMarkAsDone = async (id: string) => {
     const task = tasks.find(task => task.id === id);
@@ -79,28 +91,30 @@ const CurrentTask = () => {
   };
 
   const handleConfirmToAddTask = async () => {
-    if (!taskNameInput || !dueDateInput) {
-      alert("Please enter a task name and select a due date/time.");
+    if (!taskNameInput) {
+      alert("Please enter a task name.");
       return;
     }
   
     const now = new Date();
-    if (dueDateInput.getTime() < now.getTime()) {
+    if (dueDateInput && dueDateInput.getTime() < now.getTime())
+    {
       alert("The due date/time cannot be in the past.");
       return;
     }
+    
   
     const newTask = {
       id: uuidv4(),
       userID: userID,
       label: taskNameInput,
-      priority: priorityInput,
-      dueDate: dueDateInput,
+      priority: priorityInput ?? Priority.MEDIUM,
+      dueDate: dueDateInput ?? new Date('9000-01-01T00:00:00'),
       completed: false,
       deleted: false,
       completedDate: new Date('1000-01-01T00:00:00'),
       deletedDate: new Date('1000-01-01T00:00:00'),
-      createDate: new Date()
+      createDate: now
     };
   
     try {
@@ -168,7 +182,7 @@ const CurrentTask = () => {
   console.log(tasks)
   return (
     <div>
-      <NavigationBar username={userID} loggedIn />
+      <NavigationBar showMenu />
 
       <main className="flex flex-col gap-6 p-6 sm:px-12">
         

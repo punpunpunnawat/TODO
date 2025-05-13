@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import useGlobal from "../../hooks/useGlobal";
 
 const Login = () => {
-    const {setUserID} = useGlobal();
+    const {setUserID, setUserEmail} = useGlobal();
     const navigate = useNavigate();
     const [loginEmailInput, setLoginEmailInput] = useState<string>("");
     const [loginPasswordInput, setLoginPasswordInput] = useState<string>("");
@@ -37,7 +37,7 @@ const Login = () => {
     console.log(loginPasswordInput)
     
     const handleClickLogin = async () => {
-        // Construct the login data
+
         const loginData = {
             email: loginEmailInput,
             password: loginPasswordInput
@@ -45,8 +45,6 @@ const Login = () => {
 
         console.log("Login data:", loginData);
 
-    
-        // Send POST request to backend for login verification
         try {
             const response = await fetch("http://localhost:8080/login", {
                 method: "POST",
@@ -60,11 +58,12 @@ const Login = () => {
                 // If login is successful, redirect to the current task page
                 const user = await response.json();
                 console.log("Login successful:", user);
-                setUserID(user.user_id)
-                localStorage.setItem('userID', user.user_id);
-                navigate("/current-task"); // Navigate to the next page (e.g., dashboard or tasks)
+                setUserID(user.userId)
+                localStorage.setItem('userID', user.userId);
+                setUserEmail(user.email)
+                localStorage.setItem('userEmail', user.email);
+                navigate("/current-task"); // Navigate to the next page
             } else {
-                // If login failed, display an error message
                 const error = await response.json();
                 console.error("Login failed:", error);
                 alert("Login failed: " + error.message);
@@ -75,11 +74,47 @@ const Login = () => {
         }
     };
     
+    const handleClickRegister = async () => {
+        if (registerPasswordInput !== registerConfirmPasswordInput) {
+            alert("Passwords do not match.");
+            return;
+        }
+
+        const registerData = {
+            email: registerEmailInput,
+            password: registerPasswordInput
+        };
+
+        console.log("Register data:", registerData);
+        console.log("Register data:" + (JSON.stringify(registerData)));
+        try {
+            const response = await fetch("http://localhost:8080/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(registerData),
+            });
+
+            if (response.ok) {
+                alert("Registration successful! Please log in.");
+                navigate("/login", { replace: true }); // stays on login page
+            } else {
+                const error = await response.json();
+                console.error("Registration failed:", error);
+                alert("Registration failed: " + error.message);
+            }
+        } catch (error) {
+            console.error("Error during registration:", error);
+            alert("An error occurred while trying to register.");
+        }
+    };
+
 
   return (
     
     <div className="h-screen flex flex-col">
-        <NavigationBar username=""/>
+        <NavigationBar/>
        <main className="flex flex-1 px-6 sm:px-12 py-6 ">
             <section className="hidden lg:flex flex-1 flex-col items-center justify-center">
                 <div className="flex items-end">
@@ -140,7 +175,7 @@ const Login = () => {
                             className="h-10 light_border px-4"
                         />
                     </div>
-                    <Button>REGISTER</Button>
+                    <Button onClick={handleClickRegister}>REGISTER</Button>
                 </section>
             </section>
         </main>

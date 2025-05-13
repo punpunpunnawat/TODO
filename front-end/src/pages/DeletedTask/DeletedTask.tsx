@@ -66,7 +66,7 @@ const CurrentTask = () => {
 
   return (
     <div>
-      <NavigationBar username="punpunpunnawat" loggedIn/>
+      <NavigationBar showMenu/>
       <main className="flex flex-col gap-6 p-6 sm:px-12">
         {/*Delete Tasks List */}
       <section className="flex flex-col items-center gap-12 light_border bg-light_main px-4 py-12 sm:px-12">

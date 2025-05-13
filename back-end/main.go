@@ -17,11 +17,14 @@ func main() {
         tasksHandler(w, r, db)
     })
     http.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Println("uwu called")
         taskByIDHandler(w, r, db)
     })
     http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
         loginHandler(w, r, db)
+    })
+    http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+        fmt.Println("Register called")
+        registerHandler(w, r, db)
     })
 
     fmt.Println("Server running at http://localhost:8080")

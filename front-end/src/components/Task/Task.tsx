@@ -15,9 +15,14 @@ const Task = ({ label, priority, dueDate, completedDate, deletedDate, completed,
   useEffect(() => {
     console.log(dueDate)
     console.log(label)
-    
+
     // Function to calculate the time left
     const getTimeLeft = (): string => {
+
+      if (dueDate?.getTime() === new Date('9000-01-01T00:00:00').getTime()) {
+        return "NONE";
+      }
+
       const now = new Date();
 
       console.log(dueDate)
