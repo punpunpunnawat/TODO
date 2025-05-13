@@ -10,18 +10,18 @@ interface TaskProp extends TaskType {
 
 const Task = ({ label, priority, dueDate, completedDate, deletedDate, completed, deleted, onClickMarkAsDone, onClickDelete}: TaskProp) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
+  const noDueDate = dueDate?.getTime() === new Date('9000-01-01T00:00:00').getTime() ? true : false;
 
   // Update the timeLeft every minute
   useEffect(() => {
     console.log(dueDate)
     console.log(label)
 
+
     // Function to calculate the time left
     const getTimeLeft = (): string => {
-
-      if (dueDate?.getTime() === new Date('9000-01-01T00:00:00').getTime()) {
-        return "NONE";
-      }
+      console.log(noDueDate)
+      if(noDueDate) return "NONE"
 
       const now = new Date();
 
@@ -64,8 +64,8 @@ const Task = ({ label, priority, dueDate, completedDate, deletedDate, completed,
   };
 
   // Split date and time
-  const dueDate_date = dueDate instanceof Date ? dueDate.toLocaleDateString() : "Invalid Date";
-  const dueDate_time = dueDate instanceof Date
+  const dueDate_date = noDueDate ? "NONE" : dueDate instanceof Date ? dueDate.toLocaleDateString() : "Invalid Date";
+  const dueDate_time = noDueDate ? "NONE" : dueDate instanceof Date
     ? dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : "Invalid Time";
 

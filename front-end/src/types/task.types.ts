@@ -13,7 +13,7 @@ export interface TaskType {
   deleted: boolean;
   completedDate: Date;
   deletedDate: Date;
-  createDate: Date;
+  createdDate: Date;
 }
 
 
