@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactNode } from "react";
+import React, { useState, useEffect, ReactNode, useMemo } from "react";
 import { TaskContext } from "./TaskContext";
 import { Priority, TaskType } from "../../types/task.types";
 import useGlobal from "../../hooks/useGlobal";
@@ -14,45 +14,38 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
   const API_URL = `http://localhost:8080/`;
 
+  type RawTaskType = Omit<
+    TaskType,
+    "dueDate" | "completedDate" | "deletedDate" | "createdDate"
+  > & {
+    dueDate: string | null;
+    completedDate: string | null;
+    deletedDate: string | null;
+    createdDate: string | null;
+  };
+
   const fetchTasks = async () => {
     setLoading(true);
+
+    const parseDate = (date: string | null) => {
+      const parsed = date ? new Date(date) : null;
+      return parsed instanceof Date && !isNaN(parsed.getTime()) ? parsed : null;
+    };
+
     try {
       const res = await fetch(`${API_URL}tasks?user_id=${userID}`);
-      const data = await res.json();
-      const formatted = data.map((task: TaskType) => {
-        const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-        const completedDate = task.completedDate
-          ? new Date(task.completedDate)
-          : null;
-        const deletedDate = task.deletedDate
-          ? new Date(task.deletedDate)
-          : null;
-        const createdDate = task.createdDate
-          ? new Date(task.createdDate)
-          : null;
-        return {
-          ...task,
-          dueDate:
-            dueDate instanceof Date && !isNaN(dueDate.getTime())
-              ? dueDate
-              : null,
-          completedDate:
-            completedDate instanceof Date && !isNaN(completedDate.getTime())
-              ? completedDate
-              : null,
-          deletedDate:
-            deletedDate instanceof Date && !isNaN(deletedDate.getTime())
-              ? deletedDate
-              : null,
-          createDate:
-            createdDate instanceof Date && !isNaN(createdDate.getTime())
-              ? createdDate
-              : null,
-          priority: normalizePriority(task.priority),
-        };
-      });
+      const data: RawTaskType[] = await res.json();
+
+      const formatted: TaskType[] = data.map((task) => ({
+        ...task,
+        dueDate: parseDate(task.dueDate),
+        completedDate: parseDate(task.completedDate),
+        deletedDate: parseDate(task.deletedDate),
+        createdDate: parseDate(task.createdDate),
+        priority: normalizePriority(task.priority),
+      }));
+
       setTasks(formatted);
-      console.log(formatted);
       setError(null);
     } catch (err) {
       console.error(err);
@@ -68,26 +61,33 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     return Priority.MEDIUM;
   };
 
-  useEffect(() => {
-    fetchTasks();
-    console.log(tasks);
-  }, [userID]);
-
   // Helper function to format dueDate and priority
-  const formatDateToString = (taskInput: Partial<TaskType>) => {
+  const formatDate = (taskInput: Partial<TaskType>) => {
     const taskToSend: Record<string, unknown> = { ...taskInput };
+
+    //format Date as YYYY-MM-DD HH:MM:SS
+    const formatDateToString = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+      const seconds = String(date.getSeconds()).padStart(2, "0");
+
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    };
 
     // Convert Date object to MySQL DATETIME format (YYYY-MM-DD HH:MM:SS)
     if (taskInput.dueDate instanceof Date) {
-      taskToSend.dueDate = formatTime(taskInput.dueDate);
+      taskToSend.dueDate = formatDateToString(taskInput.dueDate);
     }
 
     if (taskInput.completedDate instanceof Date) {
-      taskToSend.completedDate = formatTime(taskInput.completedDate);
+      taskToSend.completedDate = formatDateToString(taskInput.completedDate);
     }
 
     if (taskInput.deletedDate instanceof Date) {
-      taskToSend.deletedDate = formatTime(taskInput.deletedDate);
+      taskToSend.deletedDate = formatDateToString(taskInput.deletedDate);
     }
 
     // Ensure priority is a string ('HIGH', etc.)
@@ -98,21 +98,9 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     return taskToSend;
   };
 
-  //format Date as YYYY-MM-DD HH:MM:SS
-  const formatTime = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const seconds = String(date.getSeconds()).padStart(2, "0");
-
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-  };
-
   const addTask = async (taskInput: TaskType) => {
     try {
-      const taskToSend = formatDateToString(taskInput);
+      const taskToSend = formatDate(taskInput);
       const res = await fetch(`${API_URL}tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -128,7 +116,7 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   };
 
   const updateTask = async (id: string, taskInput: Partial<TaskType>) => {
-    const taskToSend = formatDateToString(taskInput); // Format task fields for backend
+    const taskToSend = formatDate(taskInput); // Format task fields for backend
 
     try {
       const res = await fetch(`${API_URL}tasks/${id}`, {
@@ -146,6 +134,7 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
           task.id === id ? { ...task, ...taskInput } : task
         )
       );
+      // fetchTasks()
 
       setError(null); // Reset any previous errors
     } catch (err) {
@@ -154,35 +143,25 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     }
   };
 
-  const deleteTask = async (id: string) => {
-    try {
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Failed to delete task");
-
-      // Update local state instead of full refresh
-      setTasks((prev) => prev.filter((task) => task.id !== id));
-      setError(null);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to delete task");
-    }
-  };
-
+  useEffect(() => {
+    fetchTasks();
+  }, [userID]);
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      tasks,
+      loading,
+      error,
+      setTasks,
+      fetchTasks,
+      addTask,
+      updateTask,
+    }),
+    [tasks, loading, error] // Only re-run the memoization when these values change
+  );
+  
   return (
-    <TaskContext.Provider
-      value={{
-        tasks,
-        loading,
-        error,
-        setTasks,
-        fetchTasks,
-        addTask,
-        updateTask,
-        deleteTask,
-      }}
-    >
+    <TaskContext.Provider value={contextValue}>
       {children}
     </TaskContext.Provider>
   );

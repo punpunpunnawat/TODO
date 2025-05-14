@@ -8,12 +8,12 @@ export interface TaskType {
   id: string;
   label: string;
   priority: Priority;
-  dueDate: Date;
   completed: boolean;
   deleted: boolean;
-  completedDate: Date;
-  deletedDate: Date;
-  createdDate: Date;
+  dueDate: Date | null;
+  completedDate: Date | null;
+  deletedDate: Date | null;
+  createdDate: Date | null;
 }
 
 
@@ -25,7 +25,6 @@ export interface TaskContextType {
   fetchTasks: () => Promise<void>;
   addTask: (taskInput: TaskType) => Promise<void>;
   updateTask: (id: string, taskInput: Partial<TaskType>) => Promise<void>;
-  deleteTask: (id: string) => Promise<void>;
 }
 
 export interface GlobalContextType {
