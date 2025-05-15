@@ -21,9 +21,8 @@ const Task = ({
 }: TaskProp) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
   const noDueDate =
-  dueDate instanceof Date &&
-  dueDate.getTime() === new Date("9000-01-01T00:00:00").getTime();
-
+    dueDate instanceof Date &&
+    dueDate.getTime() === new Date("9000-01-01T00:00:00").getTime();
 
   // Update the timeLeft every minute
   useEffect(() => {
@@ -157,8 +156,14 @@ const Task = ({
       {/* Mobile layout */}
       <div className="sm:hidden flex flex-col gap-2 p-4 bg-light_main light_border">
         <div className="flex gap-2">
+          <MaskAsDoneIcon onClick={handleClickMarkAsDone} />
+          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">
+            {label}
+          </div>
+        </div>
+        <div className="flex gap-2">
           <div
-            className={`flex w-12 h-10 p-4 items-center justify-center light_border_disable
+            className={`flex w-10 h-10 p-4 items-center justify-center light_border_disable
                 ${
                   priority === Priority.HIGH
                     ? "bg-priority_high"
@@ -173,11 +178,6 @@ const Task = ({
               ? "M"
               : "L"}
           </div>
-          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">
-            {label}
-          </div>
-        </div>
-        <div className="flex gap-2">
           <div className="flex flex-1 h-10 items-center justify-center light_border_disable">
             {completedDate_date}
           </div>
