@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { TaskListCategory,  } from "../../types/task.types";
-import Button from "../../components/Button";
 import NavigationBar from "../../components/NavigationBar";
 import "react-datepicker/dist/react-datepicker.css";
 import useGlobal from "../../hooks/useGlobal";
@@ -35,8 +34,8 @@ const CurrentTask = () => {
         {/* Add New Task */}
         <AddTaskForm/>
 
-        {/* Add new Task : Mobile */}
-        <Button className="md:hidden">ADD TASK</Button>
+        {/* Add new Task : Mobile
+        <Button className="md:hidden">ADD TASK</Button> */}
 
         {/*Current Tasks List */}
         <TaskList category={TaskListCategory.CURRENT}/>
