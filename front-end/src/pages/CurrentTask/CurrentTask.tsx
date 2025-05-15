@@ -32,7 +32,6 @@ const CurrentTask = () => {
   useEffect(() => {
     if (loggedIn === false) {
       navigate("/login");
-      console.log("go back!!!!");
       return;
     }
     if (loggedIn === true) {
