@@ -1,34 +1,41 @@
 import Button from "../Button";
-import MaskAsDoneIcon from '../../assets/icons/check-box-default.svg?react';
+import MaskAsDoneIcon from "../../assets/icons/check-box-default.svg?react";
 import { Priority, TaskType } from "../../types/task.types";
 import { useState, useEffect } from "react";
 
 interface TaskProp extends TaskType {
   onClickMarkAsDone?: () => void;
-  onClickDelete?: () => void;
+  onClickButton?: () => void;
 }
 
-const Task = ({ label, priority, dueDate, completedDate, deletedDate, completed, deleted, onClickMarkAsDone, onClickDelete}: TaskProp) => {
+const Task = ({
+  label,
+  priority,
+  dueDate,
+  completedDate,
+  deletedDate,
+  completed,
+  deleted,
+  onClickMarkAsDone,
+  onClickButton,
+}: TaskProp) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
-  const noDueDate = dueDate?.getTime() === new Date('9000-01-01T00:00:00').getTime() ? true : false;
+  const noDueDate =
+  dueDate instanceof Date &&
+  dueDate.getTime() === new Date("9000-01-01T00:00:00").getTime();
+
 
   // Update the timeLeft every minute
   useEffect(() => {
-    console.log(dueDate)
-    console.log(label)
-
+    console.log(dueDate);
+    console.log(label);
 
     // Function to calculate the time left
     const getTimeLeft = (): string => {
-      console.log(noDueDate)
-      if(noDueDate) return "NONE"
-
+      console.log(noDueDate);
+      if (!dueDate || noDueDate) return "NONE";
       const now = new Date();
-
-      console.log(dueDate)
       const diff = dueDate.getTime() - now.getTime();
-
-      if (completed) return "DONE";
       if (diff <= 0) return "EXPIRED";
 
       const minutes = Math.floor(diff / (1000 * 60)) % 60;
@@ -59,34 +66,63 @@ const Task = ({ label, priority, dueDate, completedDate, deletedDate, completed,
     onClickMarkAsDone?.();
   };
 
-  const handleClickDelete = () => {
-    onClickDelete?.();
+  const handleClickButton = () => {
+    onClickButton?.();
   };
 
   // Split date and time
-  const dueDate_date = noDueDate ? "NONE" : dueDate instanceof Date ? dueDate.toLocaleDateString() : "Invalid Date";
-  const dueDate_time = noDueDate ? "NONE" : dueDate instanceof Date
-    ? dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const dueDate_date = noDueDate
+    ? "NONE"
+    : dueDate instanceof Date
+    ? dueDate.toLocaleDateString()
+    : "Invalid Date";
+  const dueDate_time = noDueDate
+    ? "NONE"
+    : dueDate instanceof Date
+    ? dueDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     : "Invalid Time";
 
-    const completedDate_date = completedDate instanceof Date ? completedDate.toLocaleDateString() : "Invalid Date";
-    const completedDate_time = completedDate instanceof Date
-      ? completedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const completedDate_date =
+    completedDate instanceof Date
+      ? completedDate.toLocaleDateString()
+      : "Invalid Date";
+  const completedDate_time =
+    completedDate instanceof Date
+      ? completedDate.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
       : "Invalid Time";
 
-    const deleteDate_date = deletedDate instanceof Date ? deletedDate.toLocaleDateString() : "Invalid Date";
-    const deleteDate_time = deletedDate instanceof Date
-      ? deletedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const deleteDate_date =
+    deletedDate instanceof Date
+      ? deletedDate.toLocaleDateString()
+      : "Invalid Date";
+  const deleteDate_time =
+    deletedDate instanceof Date
+      ? deletedDate.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
       : "Invalid Time";
 
   return (
     <>
       {/* Desktop layout */}
       <div className="hidden sm:flex gap-2 p-2 bg-light_main light_border items-center ">
-        {!deleted && <MaskAsDoneIcon className="w-10 h-10" onClick={handleClickMarkAsDone} />}
-        
+        {!deleted && (
+          <MaskAsDoneIcon
+            className="w-10 h-10"
+            onClick={handleClickMarkAsDone}
+          />
+        )}
+
         <div className="hidden md:flex w-50 h-10 items-center justify-center light_border_disable">
-          {deleted ? deleteDate_date+" "+ deleteDate_time : completed ? completedDate_date+" "+completedDate_time : timeLeft}
+          {deleted
+            ? deleteDate_date + " " + deleteDate_time
+            : completed
+            ? completedDate_date + " " + completedDate_time
+            : timeLeft}
         </div>
         <div className="flex-1 px-5 truncate overflow-hidden whitespace-nowrap">
           {label}
@@ -94,9 +130,10 @@ const Task = ({ label, priority, dueDate, completedDate, deletedDate, completed,
 
         <div
           className={`hidden lg:flex w-28 h-10 items-center justify-center light_border_disable
-            ${priority === Priority.HIGH
-              ? "bg-priority_high"
-              : priority === Priority.MEDIUM
+            ${
+              priority === Priority.HIGH
+                ? "bg-priority_high"
+                : priority === Priority.MEDIUM
                 ? "bg-priority_medium"
                 : "bg-priority_low"
             }`}
@@ -104,36 +141,56 @@ const Task = ({ label, priority, dueDate, completedDate, deletedDate, completed,
           {Priority[priority]}
         </div>
 
-        <div className="hidden xl:flex w-40 h-10 items-center justify-center light_border_disable">{dueDate_date}</div>
-        <div className="hidden xl:flex w-24 h-10 items-center justify-center light_border_disable">{dueDate_time}</div>
-        {!deleted ? <Button onClick={handleClickDelete}>DELETE</Button> : <Button onClick={handleClickDelete}>RECOVERY</Button>}
+        <div className="hidden xl:flex w-40 h-10 items-center justify-center light_border_disable">
+          {dueDate_date}
+        </div>
+        <div className="hidden xl:flex w-24 h-10 items-center justify-center light_border_disable">
+          {dueDate_time}
+        </div>
+        {!deleted ? (
+          <Button onClick={handleClickButton}>DELETE</Button>
+        ) : (
+          <Button onClick={handleClickButton}>RECOVERY</Button>
+        )}
       </div>
 
       {/* Mobile layout */}
       <div className="sm:hidden flex flex-col gap-2 p-4 bg-light_main light_border">
         <div className="flex gap-2">
           <div
-              className={`flex w-12 h-10 p-4 items-center justify-center light_border_disable
-                ${priority === Priority.HIGH
-                  ? "bg-priority_high"
-                  : priority === Priority.MEDIUM
+            className={`flex w-12 h-10 p-4 items-center justify-center light_border_disable
+                ${
+                  priority === Priority.HIGH
+                    ? "bg-priority_high"
+                    : priority === Priority.MEDIUM
                     ? "bg-priority_medium"
                     : "bg-priority_low"
                 }`}
-            >
-              {priority === Priority.HIGH ? "H" : priority === Priority.MEDIUM ? "M" : "L"}
+          >
+            {priority === Priority.HIGH
+              ? "H"
+              : priority === Priority.MEDIUM
+              ? "M"
+              : "L"}
           </div>
-          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{label}</div>
-        </div >
-        <div className="flex gap-2">
-          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{completedDate_date}</div>
-          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">{completedDate_time}</div>
+          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">
+            {label}
+          </div>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleClickDelete} className="flex-1">DELETE</Button>
+          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">
+            {completedDate_date}
+          </div>
+          <div className="flex flex-1 h-10 items-center justify-center light_border_disable">
+            {completedDate_time}
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleClickButton} className="flex-1">
+            DELETE
+          </Button>
         </div>
       </div>
-
     </>
   );
 };

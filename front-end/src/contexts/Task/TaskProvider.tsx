@@ -109,6 +109,7 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
 
       if (!res.ok) throw new Error("Failed to add task");
       setTasks((prevTasks) => [...prevTasks, taskInput]);
+      // fetchTasks()
     } catch (err) {
       console.error(err);
       setError("Failed to add task");

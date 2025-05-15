@@ -16,6 +16,11 @@ export interface TaskType {
   createdDate: Date | null;
 }
 
+export enum TaskListCategory {
+  CURRENT = 'CURRENT',
+  COMPLETED = 'COMPLETED',
+  DELETED = 'DELETED',
+}
 
 export interface TaskContextType {
   tasks: TaskType[];
