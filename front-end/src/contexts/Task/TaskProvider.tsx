@@ -8,7 +8,7 @@ interface TaskProviderProps {
 }
 
 export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
-  const { userID } = useGlobal();
+  const { userID, loggedIn } = useGlobal();
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -145,8 +145,8 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchTasks();
-  }, [userID]);
+    if(loggedIn)fetchTasks();
+  }, [userID, loggedIn]);
   // Memoize the context value to prevent unnecessary re-renders
   const contextValue = useMemo(
     () => ({

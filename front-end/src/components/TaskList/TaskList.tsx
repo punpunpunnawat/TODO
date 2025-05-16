@@ -26,10 +26,11 @@ const TaskList: React.FC<TaskListProp> = ({ category }) => {
           "PRIORITY LOW TO HIGH",
         ]
       : category === TaskListCategory.DELETED
-      ? [ "DELETED DATE",
+      ? [
+          "DELETED DATE",
           "CREATED DATE",
           "PRIORITY HIGH TO LOW",
-          "PRIORITY LOW TO HIGH"
+          "PRIORITY LOW TO HIGH",
         ]
       : [];
 
@@ -37,6 +38,11 @@ const TaskList: React.FC<TaskListProp> = ({ category }) => {
   const [filteredTask, setFilteredTask] = useState<TaskType[]>([]);
   const [activeSortOption, setSortOption] = useState<string>(sortOptions[0]);
 
+  console.log(category);
+  const backgroundColor =
+    category === TaskListCategory.COMPLETED ? "light_disable" : "light_main";
+
+  console.log(backgroundColor);
   useEffect(() => {
     let result = tasks;
 
@@ -164,7 +170,9 @@ const TaskList: React.FC<TaskListProp> = ({ category }) => {
   };
 
   return (
-    <section className="flex flex-col items-center gap-12 light_border bg-light_main px-4 py-12 sm:px-12">
+    <section
+      className={`flex flex-col items-center gap-12 light_border bg-${backgroundColor} px-4 py-12 sm:px-12`}
+    >
       {/* if Loading */}
       {loading ? (
         <div className="flex items-center justify-center py-12 w-full">
@@ -179,11 +187,11 @@ const TaskList: React.FC<TaskListProp> = ({ category }) => {
         // default task list show
         <>
           <header className="flex flex-col gap-4">
-            <h2 className="text-2xl text-center">CURRENT TASK</h2>
+            <h2 className="text-2xl text-center">{category} TASK</h2>
             <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
               <span className="text-sm">SORT BY</span>
               <DropdownInput
-                className="w-60"
+                className="w-70"
                 label={activeSortOption}
                 options={sortOptions}
                 onSelect={(selectedOption: string) =>
@@ -195,7 +203,7 @@ const TaskList: React.FC<TaskListProp> = ({ category }) => {
 
           <div className="flex w-full flex-col gap-2">
             {/* Header Row */}
-            <div className="hidden w-full h-fit items-center gap-2 bg-light_main px-2 sm:flex">
+            <div className="hidden w-full h-fit items-center gap-2 px-2 sm:flex">
               {category !== TaskListCategory.DELETED && (
                 <div className="invisible h-10 w-10" />
               )}
@@ -217,7 +225,9 @@ const TaskList: React.FC<TaskListProp> = ({ category }) => {
               <div className="hidden h-fit w-24 items-center justify-center xl:flex">
                 DUE TIME
               </div>
-              <Button className="invisible">DELETE</Button>
+              <Button className="invisible">
+                {category === TaskListCategory.DELETED ? "RECOVERY" : "DELETE"}
+              </Button>
             </div>
 
             {/* Tasks */}

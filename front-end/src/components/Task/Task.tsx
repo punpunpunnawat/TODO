@@ -24,30 +24,33 @@ const Task = ({
     dueDate instanceof Date &&
     dueDate.getTime() === new Date("9000-01-01T00:00:00").getTime();
 
+  // Split date and time
+  const getTimeLeft = (): string => {
+    if (!dueDate || noDueDate) return "NONE";
+    const now = new Date();
+    const diff = dueDate.getTime() - now.getTime();
+    if (diff <= 0) return "EXPIRED";
+    const minutes = Math.floor(diff / (1000 * 60)) % 60;
+    const hours = Math.floor(diff / (1000 * 60 * 60)) % 24;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    let result = "";
+    if (days > 0) result += `${days}d `;
+    if (hours > 0) result += `${hours}h `;
+    if (minutes > 0) result += `${minutes}m`;
+    return result.trim() + " left";
+  };
+
+  const handleClickMarkAsDone = () => {
+    onClickMarkAsDone?.();
+  };
+
+  const handleClickButton = () => {
+    onClickButton?.();
+  };
+
   // Update the timeLeft every minute
   useEffect(() => {
-    console.log(dueDate);
-    console.log(label);
-
     // Function to calculate the time left
-    const getTimeLeft = (): string => {
-      console.log(noDueDate);
-      if (!dueDate || noDueDate) return "NONE";
-      const now = new Date();
-      const diff = dueDate.getTime() - now.getTime();
-      if (diff <= 0) return "EXPIRED";
-
-      const minutes = Math.floor(diff / (1000 * 60)) % 60;
-      const hours = Math.floor(diff / (1000 * 60 * 60)) % 24;
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-      let result = "";
-      if (days > 0) result += `${days}d `;
-      if (hours > 0) result += `${hours}h `;
-      if (minutes > 0) result += `${minutes}m`;
-
-      return result.trim() + " left";
-    };
 
     // Update the timeLeft on an interval every minute
     const intervalId = setInterval(() => {
@@ -59,17 +62,8 @@ const Task = ({
 
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
-  }, [dueDate, completed, completedDate, label]); // Re-run the effect when dueDate changes
+  }, [dueDate, completed, completedDate, label, noDueDate]); // Re-run the effect when dueDate changes
 
-  const handleClickMarkAsDone = () => {
-    onClickMarkAsDone?.();
-  };
-
-  const handleClickButton = () => {
-    onClickButton?.();
-  };
-
-  // Split date and time
   const dueDate_date = noDueDate
     ? "NONE"
     : dueDate instanceof Date
@@ -80,7 +74,6 @@ const Task = ({
     : dueDate instanceof Date
     ? dueDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     : "Invalid Time";
-
   const completedDate_date =
     completedDate instanceof Date
       ? completedDate.toLocaleDateString()
@@ -92,7 +85,6 @@ const Task = ({
           minute: "2-digit",
         })
       : "Invalid Time";
-
   const deleteDate_date =
     deletedDate instanceof Date
       ? deletedDate.toLocaleDateString()
@@ -108,14 +100,13 @@ const Task = ({
   return (
     <>
       {/* Desktop layout */}
-      <div className="hidden sm:flex gap-2 p-2 bg-light_main light_border items-center ">
+      <div className="hidden sm:flex gap-2 p-2 light_border items-center ">
         {!deleted && (
           <MaskAsDoneIcon
-            className="w-10 h-10"
+            className="w-10 h-10 cursor-pointer"
             onClick={handleClickMarkAsDone}
           />
         )}
-
         <div className="hidden md:flex w-50 h-10 items-center justify-center light_border_disable">
           {deleted
             ? deleteDate_date + " " + deleteDate_time
@@ -126,7 +117,6 @@ const Task = ({
         <div className="flex-1 px-5 truncate overflow-hidden whitespace-nowrap">
           {label}
         </div>
-
         <div
           className={`hidden lg:flex w-28 h-10 items-center justify-center light_border_disable
             ${
@@ -139,7 +129,6 @@ const Task = ({
         >
           {Priority[priority]}
         </div>
-
         <div className="hidden xl:flex w-40 h-10 items-center justify-center light_border_disable">
           {dueDate_date}
         </div>
@@ -147,16 +136,16 @@ const Task = ({
           {dueDate_time}
         </div>
         {!deleted ? (
-          <Button onClick={handleClickButton}>DELETE</Button>
+          <Button onClick={handleClickButton} backgroundColor="trasparecy">DELETE</Button>
         ) : (
-          <Button onClick={handleClickButton}>RECOVERY</Button>
+          <Button onClick={handleClickButton} backgroundColor="trasparecy">RECOVERY</Button>
         )}
       </div>
 
       {/* Mobile layout */}
-      <div className="sm:hidden flex flex-col gap-2 p-4 bg-light_main light_border">
+      <div className="sm:hidden flex flex-col gap-2 p-4 light_border">
         <div className="flex gap-2">
-          <MaskAsDoneIcon onClick={handleClickMarkAsDone} />
+          {!deleted && <MaskAsDoneIcon onClick={handleClickMarkAsDone} className="cursor-pointer"/>}
           <div className="flex flex-1 h-10 items-center justify-center light_border_disable">
             {label}
           </div>
@@ -179,14 +168,14 @@ const Task = ({
               : "L"}
           </div>
           <div className="flex flex-1 h-10 items-center justify-center light_border_disable">
-            {completedDate_date}
+            {noDueDate ? "NONE" : dueDate_date}
           </div>
           <div className="flex flex-1 h-10 items-center justify-center light_border_disable">
-            {completedDate_time}
+            {noDueDate ? "NONE" : dueDate_time}
           </div>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleClickButton} className="flex-1">
+          <Button onClick={handleClickButton} className="flex-1" backgroundColor="trasparecy">
             DELETE
           </Button>
         </div>

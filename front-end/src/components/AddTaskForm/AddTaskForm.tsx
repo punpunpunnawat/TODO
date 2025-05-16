@@ -95,7 +95,7 @@ const AddTaskForm: React.FC = () => {
                 label="PRIORITY"
                 options={["HIGH", "MEDIUM", "LOW"]}
                 onSelect={handlePrioritySelectInput}
-                className="w-30"
+                className="w-40"
               />
               <div>
                 <DatePicker
