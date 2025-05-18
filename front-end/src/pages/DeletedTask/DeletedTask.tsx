@@ -3,14 +3,21 @@ import NavigationBar from "../../components/NavigationBar";
 import useTask from "../../hooks/useTask";
 import { TaskListCategory } from "../../types/task.types";
 import TaskList from "../../components/TaskList";
+import { useNavigate } from "react-router-dom";
+import useGlobal from "../../hooks/useGlobal";
 
-const CurrentTask = () => {
-  
+const DeletedTask = () => {
   const { fetchTasks } = useTask();
+  const { loggedIn } = useGlobal();
+    const navigate = useNavigate();
 
   useEffect(() => {
-    fetchTasks(); // Refresh tasks every time this page is entered
-  }, []);
+    if (loggedIn === false) {
+      navigate("/login");
+      return;
+    }
+    fetchTasks();
+  }, [fetchTasks, loggedIn, navigate]);
 
   return (
     <div>
@@ -22,4 +29,4 @@ const CurrentTask = () => {
   );
 };
 
-export default CurrentTask;
+export default DeletedTask;

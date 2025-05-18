@@ -62,7 +62,7 @@ const Task = ({
 
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
-  }, [dueDate, completed, completedDate, label, noDueDate]); // Re-run the effect when dueDate changes
+  }, [dueDate]);
 
   const dueDate_date = noDueDate
     ? "NONE"

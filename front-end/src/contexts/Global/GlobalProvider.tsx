@@ -34,6 +34,16 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
 
   if (initializing) return null;
 
+    const clearGlobalData = () =>
+    {
+      localStorage.clear();
+      setUserID("");
+      setUserEmail("");
+      // setTasks([]);
+      setLoggedIn(false);
+      // fetchTasks();
+    }
+
   return (
     <GlobalContext.Provider
       value={{
@@ -44,6 +54,7 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
         setUserID,
         setUserEmail,
         setDarkModeActive,
+        clearGlobalData
       }}
     >
       {children}

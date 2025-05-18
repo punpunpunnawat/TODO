@@ -38,11 +38,11 @@ const TaskList: React.FC<TaskListProp> = ({ category }) => {
   const [filteredTask, setFilteredTask] = useState<TaskType[]>([]);
   const [activeSortOption, setSortOption] = useState<string>(sortOptions[0]);
 
-  console.log(category);
+  //console.log(category);
   const backgroundColor =
     category === TaskListCategory.COMPLETED ? "light_disable" : "light_main";
 
-  console.log(backgroundColor);
+  //console.log(backgroundColor);
   useEffect(() => {
     let result = tasks;
 
@@ -180,8 +180,11 @@ const TaskList: React.FC<TaskListProp> = ({ category }) => {
         </div>
       ) : // if have no task show icon
       filteredTask.length === 0 ? (
-        <div className="flex justify-center items-center py-12 text-center w-full">
-          Hello World
+        <div className="flex flex-col justify-center items-center py-12 text-center w-full">
+          { category===TaskListCategory.CURRENT ? <img src="/no_CURRENT.png" alt="img" className="w-80 h-80"/>:
+            category===TaskListCategory.COMPLETED ? <img src="/no_COMPLETED.png" alt="img" className="w-80 h-80"/> :
+            category===TaskListCategory.DELETED && <img src="/no_DELETED.png" alt="img" className="w-80 h-80"/>}
+            <span>NO {category} TASK NOW</span>
         </div>
       ) : (
         // default task list show

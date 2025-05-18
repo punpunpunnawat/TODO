@@ -3,7 +3,6 @@ import Dropdown from "../Dropdown";
 import MenuIcon from "../../assets/icons/menu-burger.svg?react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate from react-router-dom
 import useGlobal from "../../hooks/useGlobal";
-import useTask from "../../hooks/useTask";
 import { useEffect, useState } from "react";
 
 interface NavigationBarProps {
@@ -11,8 +10,7 @@ interface NavigationBarProps {
 }
 
 const NavigationBar: React.FC<NavigationBarProps> = ({ showMenu = false }) => {
-  const { userEmail, setUserID, setUserEmail } = useGlobal();
-  const { setTasks, fetchTasks } = useTask();
+  const { userEmail, clearGlobalData } = useGlobal();
   const [isOverlayOpen, setIsOverlayOpen] = useState<boolean>(false);
   const navigate = useNavigate();
 
@@ -25,11 +23,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ showMenu = false }) => {
   };
 
   const handleClickLogout = () => {
-    localStorage.clear();
-    setUserID("");
-    setUserEmail("");
-    setTasks([]);
-    fetchTasks();
+    clearGlobalData();
     navigate("/login", { replace: true });
   };
 

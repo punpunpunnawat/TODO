@@ -11,7 +11,7 @@ createRoot(document.getElementById('root')!).render(
     <Providers.GlobalProvider>
       <Providers.TaskProvider>
         <StrictMode>
-          <App />
+          <App/>
         </StrictMode>
       </Providers.TaskProvider>
     </Providers.GlobalProvider>
