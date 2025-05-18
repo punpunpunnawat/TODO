@@ -140,7 +140,7 @@ const Login = () => {
                             className="h-10 light_border px-4"
                         />
                         <input
-                            type="text"
+                            type="password"
                             value={loginPasswordInput}
                             onChange={handleChagePasswordInput}
                             placeholder="PASSWORD"
