@@ -1,32 +1,35 @@
 package main
 
 import (
-    "fmt"
-    "log"
-    "net/http"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
 )
 
 func main() {
-    db, err := setupDatabase()
-    if err != nil {
-        log.Fatal("Database connection failed:", err)
-    }
-    defer db.Close()
+	port := os.Getenv("PORT")
 
-    http.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
-        tasksHandler(w, r, db)
-    })
-    http.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
-        taskByIDHandler(w, r, db)
-    })
-    http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-        loginHandler(w, r, db)
-    })
-    http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Println("Register called")
-        registerHandler(w, r, db)
-    })
+	db, err := setupDatabase()
+	if err != nil {
+		log.Fatal("Database connection failed:", err)
+	}
+	defer db.Close()
 
-    fmt.Println("Server running at http://localhost:8080")
-    log.Fatal(http.ListenAndServe(":8080", enableCORS(http.DefaultServeMux)))
+	http.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
+		tasksHandler(w, r, db)
+	})
+	http.HandleFunc("/tasks/", func(w http.ResponseWriter, r *http.Request) {
+		taskByIDHandler(w, r, db)
+	})
+	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		loginHandler(w, r, db)
+	})
+	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Register called")
+		registerHandler(w, r, db)
+	})
+
+	fmt.Println("Server running at http://localhost:" + port)
+	log.Fatal(http.ListenAndServe(":"+port, enableCORS(http.DefaultServeMux)))
 }
