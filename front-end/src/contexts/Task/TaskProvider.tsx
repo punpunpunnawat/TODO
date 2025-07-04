@@ -28,7 +28,18 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const API_URL = "http://localhost:8080/";
+  const API_BASE_URL = import.meta.env.VITE_API_URL;;
+
+  const authFetch = (url: string, options: RequestInit = {}) => {
+    const token = localStorage.getItem("token");
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...(options.headers || {}),
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
+  };
 
   const normalizePriority = (p: Priority): Priority => {
     if (typeof p === "number") return p;
@@ -44,11 +55,12 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   const fetchTasks = useCallback(async () => {
     if (!userID || !loggedIn) return;
 
-    console.log("Fetching tasks...");
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}tasks?user_id=${userID}`);
+      const res = await authFetch(`${API_BASE_URL}/tasks?user_id=${userID}`);
+      if (!res.ok) throw new Error("Failed to fetch tasks");
+
       const data: RawTaskType[] = await res.json();
 
       const formatted: TaskType[] = data.map((task) => ({
@@ -102,14 +114,17 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   const addTask = async (taskInput: TaskType) => {
     try {
       const taskToSend = formatDate(taskInput);
-      const res = await fetch(`${API_URL}tasks`, {
+      const res = await authFetch(`${API_BASE_URL}/tasks`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(taskToSend),
       });
 
       if (!res.ok) throw new Error("Failed to add task");
       setTasks((prev) => [...prev, taskInput]);
+      setError(null);
     } catch (err) {
       console.error(err);
       setError("Failed to add task");
@@ -120,20 +135,21 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     const taskToSend = formatDate(taskInput);
 
     try {
-      const res = await fetch(`${API_URL}tasks/${id}`, {
+      const res = await authFetch(`${API_BASE_URL}tasks/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(taskToSend),
       });
 
       if (!res.ok) throw new Error("Failed to update task");
 
-      // setTasks((prevTasks) =>
-      //   prevTasks.map((task) =>
-      //     task.id === id ? { ...task, ...taskInput } : task
-      //   )
-      // );
-      fetchTasks();
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === id ? { ...task, ...taskInput } : task
+        )
+      );
       setError(null);
     } catch (err) {
       console.error(err);
@@ -141,12 +157,11 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     }
   };
 
-  // Fetch on login/userID change
   useEffect(() => {
     if (loggedIn && userID) {
       fetchTasks();
     } else {
-      setTasks([]); // clear on logout
+      setTasks([]);
     }
   }, [loggedIn, userID, fetchTasks]);
 

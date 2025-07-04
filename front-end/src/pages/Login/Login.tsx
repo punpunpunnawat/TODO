@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import useGlobal from "../../hooks/useGlobal";
 
 const Login = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
   const { setUserID, setUserEmail } = useGlobal();
   const navigate = useNavigate();
   const [loginEmailInput, setLoginEmailInput] = useState<string>("");
@@ -46,41 +47,43 @@ const Login = () => {
   };
 
   const handleClickLogin = async () => {
-    const loginData = {
-      email: loginEmailInput,
-      password: loginPasswordInput,
-    };
-
-    console.log("Login data:", loginData);
-
-    try {
-      const response = await fetch("http://localhost:8080/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(loginData),
-      });
-
-      if (response.ok) {
-        // If login is successful, redirect to the current task page
-        const user = await response.json();
-        console.log("Login successful:", user);
-        setUserID(user.userId);
-        localStorage.setItem("userID", user.userId);
-        setUserEmail(user.email);
-        localStorage.setItem("userEmail", user.email);
-        navigate("/current-task"); // Navigate to the next page
-      } else {
-        const error = await response.json();
-        console.error("Login failed:", error);
-        alert("Login failed: " + error.message);
-      }
-    } catch (error) {
-      console.error("Error during login:", error);
-      alert("An error occurred while trying to log in.");
-    }
+  const loginData = {
+    email: loginEmailInput,
+    password: loginPasswordInput,
   };
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(loginData),
+    });
+
+    if (response.ok) {
+      const user = await response.json();
+      console.log("Login successful:", user);
+
+      setUserID(user.userId);
+      setUserEmail(user.email);
+
+      localStorage.setItem("token", user.token);
+      localStorage.setItem("userID", user.userId);
+      localStorage.setItem("userEmail", user.email);
+
+      navigate("/current-task");
+    } else {
+      const error = await response.json();
+      console.error("Login failed:", error);
+      alert("Login failed: " + error.message);
+    }
+  } catch (error) {
+    console.error("Error during login:", error);
+    alert("An error occurred while trying to log in.");
+  }
+};
+
 
   const handleClickRegister = async () => {
     if (registerPasswordInput !== registerConfirmPasswordInput) {
@@ -96,7 +99,7 @@ const Login = () => {
     console.log("Register data:", registerData);
     console.log("Register data:" + JSON.stringify(registerData));
     try {
-      const response = await fetch("http://localhost:8080/register", {
+      const response = await fetch(`${API_BASE_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
