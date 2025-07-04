@@ -135,7 +135,7 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     const taskToSend = formatDate(taskInput);
 
     try {
-      const res = await authFetch(`${API_BASE_URL}tasks/${id}`, {
+      const res = await authFetch(`${API_BASE_URL}/tasks/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
