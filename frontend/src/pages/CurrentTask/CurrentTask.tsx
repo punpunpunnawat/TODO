@@ -5,7 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import useGlobal from "../../hooks/useGlobal";
 import { useNavigate } from "react-router-dom";
 import TaskList from "../../components/TaskList";
-import AddTaskForm from "../../components/AddTaskForm/AddTaskForm";
+import AddTaskForm from "../../components/AddTaskForm";
 import useTask from "../../hooks/useTask";
 
 const CurrentTask = () => {
