@@ -6,6 +6,6 @@ export default defineConfig({
   plugins: [ svgr(), tailwindcss(),],
   server: {
     host: '0.0.0.0',
-    allowedHosts: ['TODO.punpunpunnawat.online'],
+    allowedHosts: ['todo.punpunpunnawat.online'],
   }
 })
