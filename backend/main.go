@@ -5,10 +5,16 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	port := os.Getenv("PORT")
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	db, err := setupDatabase()
 	if err != nil {
@@ -29,6 +35,8 @@ func main() {
 		fmt.Println("Register called")
 		registerHandler(w, r, db)
 	})
+
+	port := os.Getenv("PORT")
 
 	fmt.Println("Server running at http://localhost:" + port)
 	log.Fatal(http.ListenAndServe(":"+port, enableCORS(http.DefaultServeMux)))
