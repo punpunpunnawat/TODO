@@ -31,6 +31,7 @@ const AddTaskForm: React.FC = () => {
   }, [isOverlayOpen]);
 
   console.log(isOverlayOpen);
+  
   const handleConfirmToAddTask = async () => {
     if (!taskNameInput) {
       alert("Please enter a task name.");
